@@ -8,23 +8,26 @@ echo "Prem c + <ENTER> per continuar"
 read resposta
 if [ "$resposta" == "c" ]
 then
-    for f in `find .`
+    for f in `find . -type f`
     do
-        if [ -f $f ]
+        nomdir=`dirname $f`
+        nomfit=`basename $f`
+        extfit=${nomfit##*.}
+        cd $nomdir
+        if [ "$extfit" == "rar" ]
         then
-            nomdir=`dirname $f`
-            nomfit=`basename $f`
-            extfit=${nomfit##*.} 
-            cd $nomdir
-            if [ "$extfit" == "rar" ]
-            then
-                unrar e "$nomfit"
-            elif [ "$extfit" == "zip" ]
-            then
-                unzip "$nomfit"
-            fi
-            cd -
-        fi 
+            unrar e "$nomfit"
+        elif [ "$extfit" == "zip" ]
+        then
+            unzip "$nomfit"
+        elif [ "$extfit" == "gz" ]
+        then
+            tar -xvzf "$nomfit"
+        elif [ "$extfit" == "tar" ]
+        then
+            tar -xvf "$nomfit"
+        fi
+        cd -
     done
 else
     echo "No s'ha realitzat cap canvi"
