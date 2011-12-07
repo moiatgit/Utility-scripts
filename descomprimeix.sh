@@ -8,12 +8,15 @@ echo "Prem c + <ENTER> per continuar"
 read resposta
 if [ "$resposta" == "c" ]
 then
-    for f in `find . -type f`
+    oldIFS=$IFS
+    IFS=$'\n'       # change field separator
+    fitxers=`find . -type f`
+    for f in $fitxers
     do
-        nomdir=`dirname $f`
-        nomfit=`basename $f`
-        extfit=${nomfit##*.}
-        cd $nomdir
+        nomdir=`dirname "$f"`
+        nomfit=`basename "$f"`
+        extfit="${nomfit##*.}"
+        cd "$nomdir"
         if [ "$extfit" == "rar" ]
         then
             unrar e "$nomfit"
@@ -29,6 +32,7 @@ then
         fi
         cd -
     done
+    IFS=$oldIFS
 else
     echo "No s'ha realitzat cap canvi"
 fi
