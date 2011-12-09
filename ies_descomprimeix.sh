@@ -19,7 +19,7 @@ then
         cd "$nomdir"
         if [ "$extfit" == "rar" ]
         then
-            unrar e "$nomfit"
+            unrar x "$nomfit"
         elif [ "$extfit" == "zip" ]
         then
             unzip "$nomfit"
