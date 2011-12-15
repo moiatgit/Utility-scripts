@@ -1,0 +1,15 @@
+Els scripts que inclou aquest projecte es troben,
+de moment, en fase de construcció.
+
+No estan pensats per què ningú els faci servir directament,
+a menys que sigui capaç d'entendre el que fa el seu codi.
+Per tant, si penses fer-los anar, has de tenir en compte que 
+assumeixes totalment els riscos.
+
+Amb tot, he intentat protegir aquelles accions que potencialment
+poden destruir informació, fent que l'usuari del script hagi
+de respondre a alguna qüestió.
+
+Pots fer el que vulguis amb el codi d'aquest projecte, sota els
+terminis de la GNU General Public License tal i com està publicada
+per la Free Software Foundation, tan a la versió 3 com de posteriors.

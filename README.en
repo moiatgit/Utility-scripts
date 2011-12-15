@@ -1,0 +1,14 @@
+The scripts included in this project are, by now, under construction. 
+
+They are not intended to be used directly without deep knowledge of its
+internals. Therefore if you plan to use it, remember that it is absolutely
+by your own risk. 
+
+Nonetheless, I've tried to guard potentially 
+unrecoverable results by requiring user interaction on execution.
+
+You can do whatever you want with the code of these scripts 
+under the terms of the GNU General Public License 
+as published by the Free Software Foundation,
+either version 3 of the License, or any later version (your choice)
+
