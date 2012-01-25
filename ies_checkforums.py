@@ -8,6 +8,7 @@
 #           de Moodle.
 #           La descripció de funcionament es troba a la variable 
 #           DESCR_FUNCIONAMENT
+#   TODO: interactively ask for url when not provided
 #
 import sys, os
 import optparse
@@ -96,9 +97,9 @@ def comprova_forum(forumid,  url, br):
             if n <> '0':
                 llista.append((llista_td[0].text, n))
         if llista <> []:
-            print u"%s: té comentaris nous a les entrades:"%titol
+            sys.stdout.write((u"%s: té comentaris nous a les entrades:\n"%titol).encode('utf-8'))
             for e, n in llista:
-                print u"\t%s (%s comentari%s)"%(e, n, "" if n=="1" else "s")
+                sys.stdout.write((u"\t%s (%s comentari%s)\n"%(e, n, "" if n=="1" else "s")).encode('utf-8'))
     except:
         print >> sys.stderr, "Error: no s'ha pogut accedir a %s "%pgforum
         print >> sys.stderr, sys.exc_info()[0]
