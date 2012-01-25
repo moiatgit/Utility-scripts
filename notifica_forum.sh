@@ -9,5 +9,5 @@ fitxer=/tmp/ies_checkforums.py.resposta
 ~/bin/ies_checkforums.py > $fitxer
 if [[ -s $fitxer ]]
 then
-    notify-send "`cat $fitxer`"
-f
+    /usr/bin/notify-send "`cat $fitxer`"
+fi
