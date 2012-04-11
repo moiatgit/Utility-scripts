@@ -8,7 +8,7 @@
 #           La descripció de funcionament es troba a la variable 
 #           DESCR_FUNCIONAMENT
 #
-import sys, os
+import sys, os, shutil
 import optparse
 import mechanize
 import getpass
@@ -82,13 +82,14 @@ def descarrega(exercici, directori, url, br):
             fitxer = os.path.join(subdir, nomfitxer)
             print "Descarregant el fitxer", fitxer, 
             f = br.retrieve(l.url)
-            os.rename(f[0], fitxer)
+            shutil.move(f[0], fitxer)
+            # os.rename(f[0], fitxer)
             print "(fet)"
             numdesc += 1
         print "Descarregat%(plural)s %(num)s fitxer%(plural)s"%\
             {"plural":"" if numdesc==1 else "s", "num":numdesc}
     except:
-        print >> sys.stderr, "Error: no s'ha pogut accedir a %s"%pgexercici
+        print >> sys.stderr, "Error: no s'ha pogut accedir a %s (%s)"%(pgexercici, sys.exc_info()[0])
         return False
     return True
 #

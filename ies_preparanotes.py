@@ -60,7 +60,9 @@ def tractanota(v):
                 nota_num = int(round(cf))
                 nota_str = tractapossibledecimal(v)
             else:
-                nota_num = None
+                #nota_num = None
+                nota_num = 0        # donat que no és NP considerarem un 0
+                nota_str = "0"
     return nota_num, nota_str
 #
 def cnvfloat(v):
