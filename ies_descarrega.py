@@ -154,7 +154,7 @@ def main():
     print "Connectant a %s amb l'usuari %s"%(url, username)
     br = connecta(url, username, password)
     if not br:
-        print >> sys.stderr, "Error: no es pot entrar amb l'usuari '%s'"%usuari
+        print >> sys.stderr, "Error: no es pot entrar amb l'usuari '%s'"%username
         return 3
     #
     print "Descarregant l'exercici %s"%opcions.numexercici
