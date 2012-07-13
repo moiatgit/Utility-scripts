@@ -7,6 +7,18 @@
 LOCAL="/home/moi/Feina/ies_2012_13"
 PEN="/media/moises_pen8gb/ies_2012_13"
 #
+LOCAL_NAME=host
+PEN_NAME=pen
+#
+if [ -z "$1" ];
+then
+    COMMIT_COMMENT="`date`"
+else
+    COMMIT_COMMENT="$1"
+fi
+
+echo $COMMIT_COMMENT
+#
 commit () {
     # commits on path $1 if exists
     # it recursively adds all the possible changes to the repository
@@ -15,7 +27,7 @@ commit () {
         echo "··· Commit on $1"
         cd $1
         find . -type d | grep -v "\.\w" | sed "s/\(.*\)/\"\1\"/g" | xargs git add -A
-        git commit -am "`date`"
+        git commit -am "$COMMIT_COMMENT"
     fi
 }
 #
@@ -24,13 +36,13 @@ then
     commit $LOCAL
     if [ -d $PEN ];
     then
+        commit $PEN
         cd $LOCAL
         echo "··· Pulling from $PEN"
-        git pull pen master
-        commit $PEN
+        git pull $PEN_NAME master
         cd $PEN
         echo "··· Pulling from $LOCAL"
-        git pull host master
+        git pull $LOCAL_NAME master
     fi
 fi
 
