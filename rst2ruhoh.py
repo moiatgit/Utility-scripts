@@ -65,7 +65,6 @@ def create_md(html_filename, ruhoh_path, rst_filename):
         category = ""
         dest_path = os.path.join(ruhoh_path, "posts")
         path_media = os.path.join(ruhoh_path, "media")
-    print "XXX defined dest_path as ", dest_path
     # source path
     src_path = os.path.dirname(rst_filename)
     # image path correction
@@ -95,14 +94,11 @@ def create_md(html_filename, ruhoh_path, rst_filename):
                 else:
                     a["href"]="{{urls.media}}/%s/%s"%(category, a["href"])
     # create category folder if doesn't exists
-    print "XXX before creating dest_path=", dest_path
     if not os.path.exists(dest_path):
         os.mkdir(dest_path)
     # compose md name
     name, _ = os.path.splitext(os.path.basename(rst_filename))
-    print "XXX before joining dest_path=", dest_path
     md_filename = os.path.join(dest_path, "%s.md"%name)
-    print "XXX md_filename=", md_filename
     # write results on md_file
     md = open(md_filename, "w")
     md.write("---\n")
