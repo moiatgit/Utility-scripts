@@ -137,7 +137,7 @@ def checkParams():
     try:
         c.read(CONF_FILENAME)
         ruhoh_path = os.path.expanduser(c.get('RUHOH', 'local_path'))
-    except Error as e:
+    except:
         print >> sys.stderr, "Error: %s expected with contents\n"%CONF_FILENAME +\
                 "[RUHOH]\n" +\
                 "local_path = path/to/ruhoh/local/site"
