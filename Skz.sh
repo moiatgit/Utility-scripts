@@ -4,11 +4,7 @@
 #
 # tries to synchronize local repository with its pen's counterpart
 #
-LOCAL="/home/moi/Feina/ies_2012_13"
-PEN="/media/moises_pen8gb/ies_2012_13"
-#
-LOCAL_NAME=host
-PEN_NAME=pen
+source ~/.Skz
 #
 if [ -z "$1" ];
 then

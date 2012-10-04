@@ -44,7 +44,7 @@ def create_md(html_filename, ruhoh_path, rst_filename):
             if m.startswith("title"):
                 break
         else:
-            meta.insert(0, "title: %s"%title.text)
+            meta.insert(0, "title: %s"%title.text.encode('utf-8'))
         title.extract()
     # set date if not present in meta
     for m in meta:
