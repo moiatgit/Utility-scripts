@@ -7,6 +7,15 @@
 #
 # required: docutils
 
+# TODO: when referencing local documents from other documents there's a mismatch
+# between urls: rst files should reference to other rst files but ruhoh requires
+# {{url}}/category/title as href. To solve it, it is necessary 
+# a not-so-hard change: check whether the link hrefs to a local .rst file. Then
+# try to extract from the referenced file the title and the category. Then replace
+# the link to {{url}}/categories/title.
+# In the meantime, a simple workaround is hardcoding ruhoh's expected href
+# in the rst file.
+# 
 # TODO: this is a rather Q&D version. You might want to clean it up 
 # before someone's comments turn your face red :s
 
