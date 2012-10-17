@@ -43,8 +43,9 @@ def create_md(html_filename, ruhoh_path, rst_filename):
     meta = []
     for comment in soup.findAll(text=lambda text:isinstance(text, Comment)):
         c = str(comment).lstrip("<!--").rstrip("-->").strip()
-        meta.append(c)
-        comment.extract()
+        if re.match("\w+: .+", c):  # is a setting
+            meta.append(c)
+            comment.extract()
     # remove title
     title = soup.find("h1")
     if title.has_key("class"):
