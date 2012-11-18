@@ -5,126 +5,88 @@
 # Autor:    moises
 # Fecha:    20101028
 # Descr:    Formata les notes per a ser tractades pel programa posanotes.py
-#           Les notes han d'estar incloses a un fitxer .csv amb el delimitador ^
-#           El format requerit és el següent
-# fila          columna             contingut
-#   0, 1                            ignorat
-#   2            ?                  pesos dels criteris de correcció (coincideix amb capçalera criteris de correcció)
-#   3           "#"                 capçalera id alumne
-#   3           "Total"             capçalera nota
-#   3           "Comentaris"        capçalera de comentaris
-#   3           a continuació       capçalera dels criteris de correcció (fins el primer blanc)
-#   4+          segons capçaleres   valors per a cada alumne (fins primer '#' en blanc)
+#           Les notes han d'estar incloses a un fitxer .csv
+#           El format esperat és un csv separat per _DELIMITADOR_ORIGEN, on:
+#               - la primera fila correspon als títols de capçalera
+#               - la capçalera de la primera columna és "id"
+#               - la primera columna indica l'identificador de l'alumne
+#               - la segona columna indica la qualificació moodle en base 100 (o NP)
 #
-#           El format de sortida és:
-#               idalumne, nota, comentaris
-#           On els comentaris són una composició en html dels valors per l'alumne als criteris.
-#           La resta d'informació del full és ignorada
+#           Com a sortida es genera un csv separat per _DELIMITADOR_DESTINACIO, on
+#               - no hi ha capçalera
+#               - la primera columna indica l'identificador de l'alumne
+#               - la segona columna indica la qualificació moodle en base 100 (els NP d'entrada passen a ser 0)
+#               - la tercera columna indica un comentari en html amb NP si la nota era no presentat, o una composició
+#                 de les columnes restants de l'entrada en forma de UL amb <li>capçalera: <b>valor</b></li>
 #
 import csv
 import optparse
 import os
 import sys
 #
-_DELIMITADOR_ORIGEN = '^'           # marca de delimitació origen
+_DELIMITADOR_ORIGEN = ','           # marca de delimitació origen
 _DELIMITADOR_DESTINACIO = '^'       # marca de delimitació destinació
 #
-_CAP_ID     = '#'                   # capçalera d'identificador
-_CAP_TOTAL  = 'Total'               # capçalera de total de nota
-_CAP_COMENT = 'Comentaris'          # capçalera de comentaris
+def es_numeric(val):
+    """retorna True si val és numèric"""
+    return unicode(val).isnumeric()
+#
+def llegeix_cap(reader):
+    """ llegeix la fila de capçaleres. Si no comença amb el mot "id", mostra error i 
+    finalitza execució. Altrament retorna les capçaleres"""
+    filacap    = reader.next()      # fila amb les capçaleres
+    if filacap[0].lower() <> "id":
+        print >> sys.stderr, "Error: la capçalera ha de començar amb id"
+        sys.exit(1)
+    return filacap
+#
+def llegeix_files(reader, ncol):
+    """ llegeix les files amb les notes i les retorna en una llista de files.
+    Ignora les files que no tenen un id numèric > 0, i aquelles que no arriben
+    a disposar del nombre de columnes indicat per ncol."""
+    files = list()
+    for r in reader:
+        i = r[0]
+        if es_numeric(i) and int(i)>0 and len(r)==ncol:
+            files.append(r)
+        else:
+            print >> sys.stderr, "Warning: ignorada la fila '%s'"%r
+    return files
+#
+def composa_comentaris(cap, fila):
+    """ composa els comentaris de la fila a partir de la capçalera """
+    comentaris = list()
+    for i in range(len(fila) - 2):
+        comentaris.append("<li>%s: <b>%s</b></li>"%(cap[i+2], fila[i+2]))
+    if len(comentaris)==0:
+        return ""
+    else:
+        return "<ul>%s</ul>"%("".join(comentaris))
+#
+def formata_files(cap, files):
+    """ formata les files a partir de la capçalera.
+    Retorna la composició segons sortida [(id, nota, comentari)]
+    on a id se li eliminen els 0 inicials, a nota se la converteix
+    en un valor numèric quan NP, i a comentaris es composen els comentaris
+    o bé un missatge de NP en cas de no presentat."""
+    notes = list()
+    for fila in files:
+        if fila[1].lower() == "NP":
+            nota = 0
+            comentaris = "No Presentat"
+        else:
+            nota = fila[1]
+            comentaris = composa_comentaris(cap, fila)
+        linia = (fila[0].lstrip("0"), nota, comentaris)
+        notes.append(linia)
+    return notes
 #
 def formata(reader, writer):
     """ formata el fitxer d'origen i el guarda a destinacio """
-    # ignora primeres dues files
-    for i in range(2): reader.next()
-    # obté les files desitjades
-    filapesos  = reader.next()      # fila amb els pesos dels criteris (cal esperar per saber les columnes)
-    filacap    = reader.next()      # fila amb les capçaleres
-    filesnotes = list()             # files amb les notes
-    for r in reader:
-        if r[0]=="": break
-        filesnotes.append(r)
-    # processa les capçaleres
-    colid     = -1
-    coltotal  = -1
-    colcoment = -1
-    for i in range(len(filacap)):
-        if filacap[i]==_CAP_ID:
-            colid = i
-        elif filacap[i]==_CAP_TOTAL:
-            coltotal = i
-        elif filacap[i]==_CAP_COMENT:
-            colcoment = i
-            break
-    if colid < 0 or coltotal < 0 or colcoment < 0:
-        print >> sys.stderr, "Error: format incorrecte del fitxer d'origen"
-        return -1
-    capcriteris = dict()            # capçaleres de criteris {col: (criteri, pes)}
-    iniciatCriteris = False         # es considera que inicien criteris a partir del primer
-                                    # no blanc després dels comentaris
-    for i in range(colcoment+1, len(filacap)):
-        if filacap[i]=='':
-            if iniciatCriteris:
-                break               # es considera finalitzats els criteris a partir del
-                                    # primer blanc després d'iniciats els criteris
-            else:
-                iniciatCriteris = True
-        else:
-            capcriteris[i]=(filacap[i], filapesos[i])
-    #
-    notesalumnes = dict()           # notes dels criteris per cada alumne {idalumne: (nota, comentari, {criteris})}
-    for l in filesnotes:
-        try:
-            idalumne = int(l[colid])                    # conversió del id alumne
-                                                        # a enter per eliminar el caràcter 0
-                                                        # inicial
-        except:
-            print >>sys.stderr, "Error: el id de l'alumne %s no és numèric"%l[colid]
-            return -1
-        try:
-            nota =  float(l[coltotal].replace(',', '.')) # conversió de nota
-                                                        # en str amb decimal 
-                                                        # separat per ',' a
-                                                        # float
-        except:
-            print >>sys.stderr, "Error: la nota %s no és numèrica"%l[coltotal]
-            return -1
-        comentari = l[colcoment]
-        notescriteris = dict()      # {columna: valoració de l'alumne}
-        for c in capcriteris:
-            notescriteris[c]=l[c]
-        notesalumnes[idalumne]=(nota, comentari, notescriteris)
-    #    
-    # composició de l'html
-    resultat = list()               # llista on es deixarà el resultat final:
-                                    # [(idalumne, nota100, anotacio)]
-    for idalumne in notesalumnes:
-        nota100       = int(round(notesalumnes[idalumne][0]*10))    # passa a base 100
-        comentari     = notesalumnes[idalumne][1]
-        notescriteris = notesalumnes[idalumne][2]
-        #
-        # comprovació de no presentat -> cap valoració
-        nopresentat = False
-        if nota100 == 0:
-            nopresentat = True
-            for criteri in notescriteris:
-                if not notescriteris[criteri]=="":
-                    nopresentat = False
-                    break
-        anotacio = "" if comentari=="" else "<p><i>Comentaris</i>: %s</p>"%comentari
-        if nopresentat:
-            resultat.append((idalumne, -1, anotacio))
-        else:        
-            anotacio += "<table><tr><td><i>Criteri</i></td><td><i>Pes</i></td><td><i>Valoració</i></td></tr>"
-            for criteri in notescriteris:   # el criteri correspon a la columna en que apareix
-                descrcriteri = capcriteris[criteri][0]
-                pescriteri   = capcriteris[criteri][1]
-                valoracio    = "&nbsp;" if notescriteris[criteri]=="" else notescriteris[criteri]
-                anotacio += "<tr><td>%s</td><td>%s</td><td><b>%s</b></td></tr>"%(descrcriteri, pescriteri, valoracio)
-            anotacio += "</tr></table>"
-            resultat.append((idalumne, nota100, anotacio))
-    # escriu el resultat al writer
-    writer.writerows(resultat)
+    cap = llegeix_cap(reader)               # llegeix les capçaleres
+    files = llegeix_files(reader, len(cap)) # llegeix la resta de files
+    resultat = formata_files(cap, files)    # formata les files segons sortida
+    writer.writerows(resultat)              # escriu el resultat al writer
 #
 def main():
     p = optparse.OptionParser(description=u"Formata les notes d'un exercici de moodle",
@@ -135,38 +97,38 @@ def main():
     opcions, arguments = p.parse_args()
     if not opcions.origen:
         print >> sys.stderr, "Error: Cal indicar el fitxer d'origen"
-        return -1
+        return 1
     if not opcions.destinacio:
         print >> sys.stderr, "Error: Cal indicar el fitxer destinació"
-        return -1
+        return 1
     #
     if os.path.exists(opcions.destinacio) and not opcions.force:
         print >> sys.stderr, "Error: ja existeix el fitxer de destinació. --force per sobreescriure"
-        return -1
+        return 1
     #
     try:
         forigen = open(opcions.origen)
     except:
         print >> sys.stderr, "Error: no es pot obrir el fitxer d'origen"
-        return -1
+        return 1
     #
     try:
         reader = csv.reader(forigen, delimiter=_DELIMITADOR_ORIGEN)
     except:
         print >> sys.stderr, "Error: no es pot obrir el fitxer d'origen com a csv"
-        return -1
+        return 1
     #
     try:
         fdestinacio = open(opcions.destinacio, "w")
     except:
         print >> sys.stderr, "Error: no es pot obrir el fitxer de destinació"
-        return -1
+        return 1
     #
     try:
         writer = csv.writer(fdestinacio, delimiter=_DELIMITADOR_DESTINACIO)
     except:
         print >> sys.stderr, "Error: no es pot obrir el fitxer de destinació com a csv"
-        return -1
+        return 1
     #
     formata(reader, writer)
     #
