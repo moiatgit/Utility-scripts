@@ -34,8 +34,9 @@ def compose_tmp_name(rst_filename):
     d = datetime.datetime.isoformat(datetime.datetime.now())
     return "/tmp/%s_%s.html"%(d, name)
 #
-def create_md(html_filename, ruhoh_path, rst_filename):
-    """ creates the md file from html """
+def create_md(html_filename, ruhoh_path, rst_filename, draft):
+    """ creates the md file from html.
+        If draft, it creates the document with draft option"""
     html = open(html_filename).read()
     soup = BeautifulSoup(html)
     soup = soup.body.contents[1]    # cleaned up to body
@@ -75,6 +76,13 @@ def create_md(html_filename, ruhoh_path, rst_filename):
         category = ""
         dest_path = os.path.join(ruhoh_path, "posts")
         path_media = os.path.join(ruhoh_path, "media")
+    # set draft option
+    if draft:
+        for m in meta:
+            if m.startswith("type:"):
+                break
+        else:
+            meta.insert(1, "type: draft")
     # source path
     src_path = os.path.dirname(rst_filename)
     # image path correction
@@ -134,9 +142,17 @@ def checkParams():
     When everything is ok, it returns the configuration information
     in a tuple: rst_filename, ruhoh_path """
     # check arguments and config file
-    if len(sys.argv) != 2:
-        print >> sys.stderr, "Usage: %s rst_filepath"%sys.argv[0]
+    if len(sys.argv) < 2 or len(sys.argv) > 3:
+        print >> sys.stderr, "Usage: %s rst_filepath [--draft]\n\tdraft option marks entry as *draft*"%sys.argv[0]
         sys.exit(1)
+    #
+    draft = False   # should it mark the document as a draft? By default no!
+    if len(sys.argv) == 3:
+        if sys.argv[2] == "--draft":
+            draft = True
+            del(sys.argv[2]) # remove argument for html conversor
+        else:
+            print >> sys.stderr, "Warning: option %s unknown"%sys.argv[2]
     #
     path, ext = os.path.splitext(sys.argv[1])
     if ext != ".rst":
@@ -158,8 +174,8 @@ def checkParams():
     if not os.path.exists(ruhoh_path):
         print >> sys.stderr, "Error: file not found: %s"%ruhoh_path
         sys.exit(5)
-    #
-    return sys.argv[1], ruhoh_path
+
+    return sys.argv[1], ruhoh_path, draft
 #
 def main():
 
@@ -167,7 +183,7 @@ def main():
     setLocale()
 
     # get configuration information
-    rst_filename, ruhoh_path = checkParams()
+    rst_filename, ruhoh_path, draft = checkParams()
 
     # define html output filename for docutils
     html_filename = compose_tmp_name(rst_filename)
@@ -179,7 +195,7 @@ def main():
     publish_cmdline(writer_name='html', description=description)
 
     # create md for ruhoh
-    create_md(html_filename, ruhoh_path, rst_filename)
+    create_md(html_filename, ruhoh_path, rst_filename, draft)
     return 0
 #
 if __name__=="__main__":
