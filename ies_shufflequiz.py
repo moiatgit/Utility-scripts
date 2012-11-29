@@ -20,7 +20,7 @@
 #   d'ajuda a l'ús (ex. capacitat per processar respostes i pesos, i de generar
 #   un document associat amb la correcció de l'ordenació generada)
 #
-import sys, random
+import os, sys, random
 #
 class Pregunta:
     def __init__(self, titol, enunciat, respostes):
@@ -114,15 +114,64 @@ def mostra_preguntes(preguntes):
     for i in range(len(preguntes)):
         p = preguntes[i]
         p.mostra_pregunta(i+1)
-        print
+#
+def valida_parametres():
+    """ valida els paràmetres de l'entrada.
+        De moment només valida que s'hagi especificat un path de fitxer
+        existent, llegible i amb extensió .quiz. 
+        Mostra missatge d'error adequat pels paràmetres
+        Retorna:
+            None: si els paràmetres no són correctes
+            fitxer: si els paràmetres són correctes
+        """
+    if len(sys.argv) not in (2, 3):
+        print >> sys.stderr, "Ús: %s nomfitxer.quiz [--force]"%sys.argv[0]
+        return None
+
+    base, ext = os.path.splitext(sys.argv[1])
+    if ext <> ".quiz":
+        print >> sys.stderr, "Error: %s no és un fitxer .quiz"%sys.argv[1]
+        return None
+
+    if not os.path.isfile(sys.argv[1]):
+        print >> sys.stderr, "Error: %s no és un fitxer vàlid"%sys.argv[1]
+        return None
+
+    force = False
+    if len(sys.argv) == 3:
+        if sys.argv[2] == "--force":
+            force = True
+
+    outtext = composa_nom_text(sys.argv[1])
+    outsol  = composa_nom_solucions(sys.argv[1])
+    if (os.path.isfile(outtext) or os.path.isfile(outsol)) and not force:
+        print >> sys.stderr, "Error: trobats %s o/i %s. Elimina'ls o fes servir l'opció --force"%(outtext, outsol)
+        return None
+
+    return sys.argv[1]
+#
+def composa_nom_text(fitxer):
+    """ retorna el nom del fitxer de sortida a generar amb les preguntes
+    a partir del nom del fitxer d'entrada """
+    base, _ = os.path.splitext(sys.argv[1])
+    return "%s.text.rst"
+#
+def composa_nom_solucions(fitxer):
+    """ retorna el nom del fitxer de sortida a generar amb les solucions
+    a partir del nom del fitxer d'entrada """
+    base, _ = os.path.splitext(sys.argv[1])
+    return "%s.solucions.rst"
 #
 def main():
-    fitxer = sys.argv[1]
+    fitxer = valida_parametres()
+    if fitxer == None:
+        return 1
     f = open(fitxer)
     preguntes = processa_continguts(f)
     f.close()
     barreja(preguntes)
     mostra_preguntes(preguntes)
+    return 0
 #
 if __name__=="__main__":
     sys.exit(main())
