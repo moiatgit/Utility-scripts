@@ -57,7 +57,8 @@ def composa_comentaris(cap, fila):
     """ composa els comentaris de la fila a partir de la capçalera """
     comentaris = list()
     for i in range(len(fila) - 2):
-        comentaris.append("<li>%s: <b>%s</b></li>"%(cap[i+2], fila[i+2]))
+        if fila[i+2]<>"":   # filtra els elements que no tenen informació
+            comentaris.append("<li>%s: <b>%s</b></li>"%(cap[i+2], fila[i+2]))
     if len(comentaris)==0:
         return ""
     else:
@@ -71,7 +72,7 @@ def formata_files(cap, files):
     o bé un missatge de NP en cas de no presentat."""
     notes = list()
     for fila in files:
-        if fila[1].lower() == "NP":
+        if fila[1].lower() == "np":
             nota = 0
             comentaris = "No Presentat"
         else:
