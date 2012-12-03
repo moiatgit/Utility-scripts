@@ -122,31 +122,39 @@ def processa_continguts(f):
     return preguntes
 #
 def mostra_preguntes(preguntes):
-    """ mostra la llista de preguntes """
+    """ mostra la llista de preguntes"""
     for i in range(len(preguntes)):
         p = preguntes[i]
         p.mostra_pregunta(i+1)
 #
 def valida_parametres():
     """ valida els paràmetres de l'entrada.
-        De moment només valida que s'hagi especificat un path de fitxer
+        Valida que el nombre de versions sigui un enter de 1 a 28.
+        Valida que s'hagi especificat un path de fitxer
         existent, llegible i amb extensió .quiz. 
         Mostra missatge d'error adequat pels paràmetres
         Retorna:
             None: si els paràmetres no són correctes
             fitxer: si els paràmetres són correctes
         """
-    if len(sys.argv) not in (2, 3):
-        print >> sys.stderr, "Ús: %s nomfitxer.quiz [--force]"%sys.argv[0]
+    if len(sys.argv) not in (3, 4):
+        print >> sys.stderr, "Ús: %s numver nomfitxer.quiz [--force]"%sys.argv[0]
         return None
 
-    base, ext = os.path.splitext(sys.argv[1])
+    if not sys.argv[1].isdigit() or int(sys.argv[1]) < 1:
+        print >> sys.stderr, "Error: %s no és un nombre adequat"%sys.argv[1]
+        return None
+
+    numver=int(sys.argv[1])
+
+    fitxer = sys.argv[2]
+    base, ext = os.path.splitext(fitxer)
     if ext <> ".quiz":
-        print >> sys.stderr, "Error: %s no és un fitxer .quiz"%sys.argv[1]
+        print >> sys.stderr, "Error: %s no és un fitxer .quiz"%fitxer
         return None
 
-    if not os.path.isfile(sys.argv[1]):
-        print >> sys.stderr, "Error: %s no és un fitxer vàlid"%sys.argv[1]
+    if not os.path.isfile(fitxer):
+        print >> sys.stderr, "Error: %s no és un fitxer vàlid"%fitxer
         return None
 
     force = False
@@ -154,35 +162,40 @@ def valida_parametres():
         if sys.argv[2] == "--force":
             force = True
 
-    outtext = composa_nom_text(sys.argv[1])
-    outsol  = composa_nom_solucions(sys.argv[1])
+    outtext = composa_nom_text(fitxer)
+    outsol  = composa_nom_solucions(fitxer)
     if (os.path.isfile(outtext) or os.path.isfile(outsol)) and not force:
         print >> sys.stderr, "Error: trobats %s o/i %s. Elimina'ls o fes servir l'opció --force"%(outtext, outsol)
         return None
 
-    return sys.argv[1]
+    return numver, fitxer
 #
 def composa_nom_text(fitxer):
     """ retorna el nom del fitxer de sortida a generar amb les preguntes
     a partir del nom del fitxer d'entrada """
-    base, _ = os.path.splitext(sys.argv[1])
+    base, _ = os.path.splitext(fitxer)
     return "%s.text.rst"
 #
 def composa_nom_solucions(fitxer):
     """ retorna el nom del fitxer de sortida a generar amb les solucions
     a partir del nom del fitxer d'entrada """
-    base, _ = os.path.splitext(sys.argv[1])
+    base, _ = os.path.splitext(fitxer)
     return "%s.solucions.rst"
 #
+def generaVersions(numver, preguntes):
+    for i in range(numver): 
+        barreja(preguntes)
+        mostra_preguntes(i, preguntes)
+#
 def main():
-    fitxer = valida_parametres()
-    if fitxer == None:
+    validacio = valida_parametres()
+    if validacio == None:
         return 1
+    numver, fitxer = validacio
     f = open(fitxer)
     preguntes = processa_continguts(f)
     f.close()
-    barreja(preguntes)
-    mostra_preguntes(preguntes)
+    generaVersions(numver, preguntes)
     return 0
 #
 if __name__=="__main__":
