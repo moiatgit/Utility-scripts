@@ -1,7 +1,18 @@
 #! /usr/bin/env python
 # encoding: utf-8
 #
-#  A partir del fitxer d'entrada, genera les preguntes i respostes reordenades
+#   Ús: sys.argv[0] numver nomfitxer.quiz [--force]
+#
+#   On:
+#
+#       numver: nombre de versions a composar
+#
+#       nomfitxer.quiz: nom del fitxer amb les preguntes i respostes
+#       reordenades
+#
+#       --force: opcionalment permet indicar que es poden sobrescriure
+#       els fitxers de sortida.
+#
 #  L'entrada ha de tenir el format
 #       .. pregunta:
 #       títol de la pregunta
@@ -49,6 +60,7 @@ class Pregunta:
             print "*%s)*"%chr(ord("a")+i),
             print self.respostes[i]
             print
+
     def barreja_respostes(self):
         """ barreja les respostes """
         random.shuffle(self.respostes)
