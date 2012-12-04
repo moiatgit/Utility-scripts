@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # encoding: utf-8
 #
-#   Ús: sys.argv[0] numver nomfitxer.quiz [--force]
+#   Ús: sys.argv[0] numver nomfitxer.quiz [--force] [--noshuffle]
 #
 #   On:
 #
@@ -12,6 +12,8 @@
 #
 #       --force: opcionalment permet indicar que es poden sobrescriure
 #       els fitxers de sortida.
+#       --noshuffle: opcionalment permet indicat que no es barregin les preguntes
+#       ni les respostes.
 #
 #  L'entrada ha de tenir el format
 #       .. pregunta:
@@ -22,6 +24,8 @@
 #       text de la resposta
 #       «altres respostes»
 #       «altres preguntes»
+#
+#  Qualsevol línia pot començar amb ".. #" o ".. //" per indicar que un comentari
 #
 #  El resultat generat tindrà format restructuredtext
 #
@@ -36,9 +40,9 @@ import os, sys, random
 class Pregunta:
     def __init__(self, titol, enunciat, respostes):
         """ inicialitza la pregunta """
-        self.titol = titol.rstrip("\n")
-        self.enunciat = enunciat.rstrip("\n")
-        self.respostes = [r.rstrip("\n") for r in respostes]
+        self.titol = titol.strip("\n")
+        self.enunciat = enunciat.strip("\n")
+        self.respostes = [r.strip("\n") for r in respostes]
     def mostra_pregunta(self, num=0):
         """ mostra la pregunta amb el número indicat. """
         if num == 0:
@@ -85,7 +89,9 @@ def processa_continguts(f):
     resposta = ""
     respostes = []
     for lin in f:
-        if estat == "pregunta":
+        if lin.startswith(".. #") or lin.startswith(".. /"):   # és un comentari
+            pass
+        elif estat == "pregunta":
             if lin.startswith(".. pregunta:"):
                 estat = "títol"  # ha trobat una pregunta i mira d'obtenir el títol
             else:
@@ -137,8 +143,8 @@ def valida_parametres():
             None: si els paràmetres no són correctes
             fitxer: si els paràmetres són correctes
         """
-    if len(sys.argv) not in (3, 4):
-        print >> sys.stderr, "Ús: %s numver nomfitxer.quiz [--force]"%sys.argv[0]
+    if len(sys.argv)<3 or len(sys.argv)>5:
+        print >> sys.stderr, "Ús: %s numver nomfitxer.quiz [--force] [--noshuffle]"%sys.argv[0]
         return None
 
     if not sys.argv[1].isdigit() or int(sys.argv[1]) < 1:
@@ -158,9 +164,12 @@ def valida_parametres():
         return None
 
     force = False
-    if len(sys.argv) == 3:
-        if sys.argv[2] == "--force":
+    shuffle = True
+    if len(sys.argv) >= 3:
+        if "--force" in (sys.argv[2:]):
             force = True
+        if "--noshuffle" in (sys.argv[2:]):
+            shuffle=False
 
     outtext = composa_nom_text(fitxer)
     outsol  = composa_nom_solucions(fitxer)
@@ -168,7 +177,7 @@ def valida_parametres():
         print >> sys.stderr, "Error: trobats %s o/i %s. Elimina'ls o fes servir l'opció --force"%(outtext, outsol)
         return None
 
-    return numver, fitxer
+    return numver, fitxer, shuffle
 #
 def composa_nom_text(fitxer):
     """ retorna el nom del fitxer de sortida a generar amb les preguntes
@@ -182,20 +191,21 @@ def composa_nom_solucions(fitxer):
     base, _ = os.path.splitext(fitxer)
     return "%s.solucions.rst"
 #
-def generaVersions(numver, preguntes):
+def generaVersions(numver, preguntes, shuffle):
     for i in range(numver): 
-        barreja(preguntes)
-        mostra_preguntes(i, preguntes)
+        if shuffle: 
+            barreja(preguntes)
+        mostra_preguntes(preguntes)
 #
 def main():
     validacio = valida_parametres()
     if validacio == None:
         return 1
-    numver, fitxer = validacio
+    numver, fitxer, shuffle = validacio
     f = open(fitxer)
     preguntes = processa_continguts(f)
     f.close()
-    generaVersions(numver, preguntes)
+    generaVersions(numver, preguntes, shuffle)
     return 0
 #
 if __name__=="__main__":
