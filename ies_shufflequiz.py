@@ -59,6 +59,9 @@ class Pregunta:
         print self.enunciat
         print
 
+        print "-"*4     # separació de les respostes
+        print
+
         # mostra les diferents respostes
         for i in range(len(self.respostes)):
             print "*%s)*"%chr(ord("a")+i),
