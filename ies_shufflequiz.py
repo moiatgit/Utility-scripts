@@ -12,6 +12,7 @@
 #
 #       --force: opcionalment permet indicar que es poden sobrescriure
 #       els fitxers de sortida.
+
 #       --noshuffle: opcionalment permet indicat que no es barregin les preguntes
 #       ni les respostes.
 #
@@ -20,7 +21,7 @@
 #       títol de la pregunta
 #       .. enunciat:
 #       text de l'enunciat
-#       .. resposta:
+#       .. resposta: [+-]
 #       text de la resposta
 #       «altres respostes»
 #       «altres preguntes»
@@ -35,14 +36,15 @@
 #   d'ajuda a l'ús (ex. capacitat per processar respostes i pesos, i de generar
 #   un document associat amb la correcció de l'ordenació generada)
 #
-import os, sys, random
+import os, sys, random, re
 #
 class Pregunta:
     def __init__(self, titol, enunciat, respostes):
         """ inicialitza la pregunta """
         self.titol = titol.strip("\n")
         self.enunciat = enunciat.strip("\n")
-        self.respostes = [r.strip("\n") for r in respostes]
+        self.respostes = [r[0].strip("\n") for r in respostes]
+
     def mostra_pregunta(self, num=0):
         """ mostra la pregunta amb el número indicat. """
         if num == 0:
@@ -65,7 +67,7 @@ class Pregunta:
         # mostra les diferents respostes
         for i in range(len(self.respostes)):
             print "*%s)*"%chr(ord("a")+i),
-            print self.respostes[i]
+            print self.respostes[i][0]
             print
 
     def barreja_respostes(self):
@@ -90,8 +92,11 @@ def processa_continguts(f):
     titol = ""
     enunciat = ""
     resposta = ""
+    pes = ""
     respostes = []
+    nlin = 0
     for lin in f:
+        nlin += 1
         if lin.startswith(".. #") or lin.startswith(".. /"):   # és un comentari
             pass
         elif estat == "pregunta":
@@ -107,25 +112,32 @@ def processa_continguts(f):
                 titol += lin
         elif estat == "enunciat":
             if lin.startswith(".. resposta:"):  # s'ha finalitzat l'enunciat
+                pes = lin.lstrip(".. resposta:").strip()
+                if pes not in ('+', '-'):
+                    print >> sys.stderr, "WARNING: resposta sense pes (lin %s)"%nlin
                 estat = "resposta"      # s'està llegint una resposta
             else:
                 enunciat += lin
         elif estat == "resposta":
             if lin.startswith(".. pregunta:"):  # s'han acabat les respostes
-                respostes.append(resposta)
+                respostes.append((resposta, pes))
                 preguntes.append(Pregunta(titol, enunciat, respostes))
                 estat = "títol"
                 titol = ""
                 enunciat = ""
                 resposta = ""
+                pes = ""
                 respostes = []
             elif lin.startswith(".. resposta:"):    # s'ha llegit una altra resposta
-                respostes.append(resposta)
+                pes = lin.lstrip(".. resposta:").strip()
+                if pes not in ('+', '-'):
+                    print >> sys.stderr, "WARNING: resposta sense pes (lin %s)"%nlin
+                respostes.append((resposta, pes))
                 resposta = ""
             else:
                 resposta += lin
     if estat == "resposta": # encara no s'ha guardat la darrera pregunta
-        respostes.append(resposta)
+        respostes.append((resposta, pes))
         preguntes.append(Pregunta(titol, enunciat, respostes))
 
     return preguntes
