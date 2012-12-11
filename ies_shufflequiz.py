@@ -43,7 +43,32 @@ class Pregunta:
         """ inicialitza la pregunta """
         self.titol = titol.strip("\n")
         self.enunciat = enunciat.strip("\n")
-        self.respostes = [(r[0].strip("\n"), r[1]) for r in respostes]
+        self.respostes = self.processa_respostes(respostes)
+
+    def processa_respostes(self, respostes):
+        """ calcula els pesos relatius de les respostes i els retorna """
+        positives = []
+        negatives = []
+        for r in respostes:
+            if r[1] == "+":
+                positives.append(r)
+            elif r[1] == "-":
+                negatives.append(r)
+            else:
+                print >> sys.stderr, "WARNING: resposta amb pes no [+-]"
+
+        pespositiu = 1.0/len(positives) if len(positives)>0 else 0.0
+        pesnegatiu = -1.0/len(negatives) if len(negatives)>0 else 0.0
+
+        processades = []
+        for r in respostes:
+            text = r[0].strip("\n")
+            if r[1] == "+":
+                processades.append((text, pespositiu))
+            else:
+
+                processades.append((text, pesnegatiu))
+        return processades
 
     def mostra_pregunta(self, num=0):
         """ mostra la pregunta amb el número indicat. """
@@ -53,6 +78,7 @@ class Pregunta:
             titol = "Pregunta %s: %s"%(num, self.titol)
 
         # mostra el títol de la pregunta
+        print
         print titol
         print "-" * len(titol)
         print
@@ -76,13 +102,17 @@ class Pregunta:
 
     def mostra_noms_respostes(self, num):
         """ mostra els ids de les respostes de la pregunta amb el número indicat"""
+        lin = ""
         for i in range(len(self.respostes)):
-            print "p%s.%s "%(num, chr(ord("a")+i)),
+            lin += "p%s.%s\t"%(num, chr(ord("a")+i))
+        print lin,
 
     def mostra_pesos_respostes(self, num):
         """ mostra els pesos de les respostes de la pregunta amb el número indicat"""
+        lin = ""
         for i in range(len(self.respostes)):
-            print "%s "%(self.respostes[i][1]),
+            lin += "%s\t"%(self.respostes[i][1])
+        print lin.replace(".", ","),
 
 #
 def barreja(preguntes):
@@ -165,7 +195,7 @@ def mostra_titols(preguntes):
     for i in range(len(preguntes)):
         p = preguntes[i]
         p.mostra_noms_respostes(i+1)
-    print
+    print "\n"*2
     # mostra els pesos de les respostes
     for i in range(len(preguntes)):
         p = preguntes[i]
