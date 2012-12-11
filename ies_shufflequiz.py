@@ -38,6 +38,8 @@
 #
 import os, sys, random, re
 #
+MAX_RESPOSTES = 10  # nombre màxim de respostes per pregunta
+#
 class Pregunta:
     def __init__(self, titol, enunciat, respostes):
         """ inicialitza la pregunta """
@@ -103,15 +105,18 @@ class Pregunta:
     def mostra_noms_respostes(self, num):
         """ mostra els ids de les respostes de la pregunta amb el número indicat"""
         lin = ""
-        for i in range(len(self.respostes)):
+        for i in range(MAX_RESPOSTES):
             lin += "p%s.%s\t"%(num, chr(ord("a")+i))
         print lin,
 
     def mostra_pesos_respostes(self, num):
         """ mostra els pesos de les respostes de la pregunta amb el número indicat"""
         lin = ""
-        for i in range(len(self.respostes)):
-            lin += "%s\t"%(self.respostes[i][1])
+        for i in range(MAX_RESPOSTES):
+            if i<len(self.respostes):
+                lin += "%s\t"%(self.respostes[i][1])
+            else:           # valors de respostes no incloses a la pregunta
+                lin += "0\t"
         print lin.replace(".", ","),
 
 #
@@ -161,6 +166,8 @@ def processa_continguts(f):
         elif estat == "resposta":
             if lin.startswith(".. pregunta:"):  # s'han acabat les respostes
                 respostes.append((resposta, pes))
+                if len(respostes)>=MAX_RESPOSTES:
+                    print >> sys.stderr, "WARNING: més de %s respostes!"%MAX_RESPOSTES
                 preguntes.append(Pregunta(titol, enunciat, respostes))
                 estat = "títol"
                 titol = ""
@@ -173,12 +180,16 @@ def processa_continguts(f):
                 if noupes not in ('+', '-'):
                     print >> sys.stderr, "WARNING: resposta sense pes (lin %s)"%nlin
                 respostes.append((resposta, pes))
+                if len(respostes)>=MAX_RESPOSTES:
+                    print >> sys.stderr, "WARNING: més de %s respostes!"%MAX_RESPOSTES
                 resposta = ""
                 pes = noupes
             else:
                 resposta += lin
     if estat == "resposta": # encara no s'ha guardat la darrera pregunta
         respostes.append((resposta, pes))
+        if len(respostes)>=MAX_RESPOSTES:
+            print >> sys.stderr, "WARNING: més de %s respostes!"%MAX_RESPOSTES
         preguntes.append(Pregunta(titol, enunciat, respostes))
 
     return preguntes
