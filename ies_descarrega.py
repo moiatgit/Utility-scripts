@@ -39,7 +39,7 @@ LOGIN_URL="/login/index.php"
 # plantilla per la pàgina dels lliuraments
 ASSIGN_URL="/mod/assignment/submissions.php?id=%s"
 # expressió regular per obtenir la url
-REGEXP_URL='(http://)?(.*?)(/.*)?$'
+REGEXP_URL='(https?://)?(.*?)(/.*)?$'
 #
 def connecta(url, usuari, password):
     """ connecta i retorna el mechanize.Browser """
@@ -131,7 +131,7 @@ def neteja_url(url):
     if url:
         m = re.match(REGEXP_URL, url)
         if m:
-            url = "http://"+m.group(2)
+            url = m.group(1)+m.group(2)
         else:
             url = None
     return url
