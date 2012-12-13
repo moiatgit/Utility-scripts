@@ -38,12 +38,39 @@
 #
 import os, sys, random, re
 #
+MAX_RESPOSTES = 10  # nombre màxim de respostes per pregunta
+#
 class Pregunta:
     def __init__(self, titol, enunciat, respostes):
         """ inicialitza la pregunta """
         self.titol = titol.strip("\n")
         self.enunciat = enunciat.strip("\n")
-        self.respostes = [r[0].strip("\n") for r in respostes]
+        self.respostes = self.processa_respostes(respostes)
+
+    def processa_respostes(self, respostes):
+        """ calcula els pesos relatius de les respostes i els retorna """
+        positives = []
+        negatives = []
+        for r in respostes:
+            if r[1] == "+":
+                positives.append(r)
+            elif r[1] == "-":
+                negatives.append(r)
+            else:
+                print >> sys.stderr, "WARNING: resposta amb pes no [+-]"
+
+        pespositiu = 1.0/len(positives) if len(positives)>0 else 0.0
+        pesnegatiu = -1.0/len(negatives) if len(negatives)>0 else 0.0
+
+        processades = []
+        for r in respostes:
+            text = r[0].strip("\n")
+            if r[1] == "+":
+                processades.append((text, pespositiu))
+            else:
+
+                processades.append((text, pesnegatiu))
+        return processades
 
     def mostra_pregunta(self, num=0):
         """ mostra la pregunta amb el número indicat. """
@@ -53,6 +80,7 @@ class Pregunta:
             titol = "Pregunta %s: %s"%(num, self.titol)
 
         # mostra el títol de la pregunta
+        print
         print titol
         print "-" * len(titol)
         print
@@ -73,6 +101,23 @@ class Pregunta:
     def barreja_respostes(self):
         """ barreja les respostes """
         random.shuffle(self.respostes)
+
+    def mostra_noms_respostes(self, num):
+        """ mostra els ids de les respostes de la pregunta amb el número indicat"""
+        lin = ""
+        for i in range(MAX_RESPOSTES):
+            lin += "p%s.%s\t"%(num, chr(ord("a")+i))
+        print lin,
+
+    def mostra_pesos_respostes(self, num):
+        """ mostra els pesos de les respostes de la pregunta amb el número indicat"""
+        lin = ""
+        for i in range(MAX_RESPOSTES):
+            if i<len(self.respostes):
+                lin += "%s\t"%(self.respostes[i][1])
+            else:           # valors de respostes no incloses a la pregunta
+                lin += "0\t"
+        print lin.replace(".", ","),
 
 #
 def barreja(preguntes):
@@ -121,6 +166,8 @@ def processa_continguts(f):
         elif estat == "resposta":
             if lin.startswith(".. pregunta:"):  # s'han acabat les respostes
                 respostes.append((resposta, pes))
+                if len(respostes)>=MAX_RESPOSTES:
+                    print >> sys.stderr, "WARNING: més de %s respostes!"%MAX_RESPOSTES
                 preguntes.append(Pregunta(titol, enunciat, respostes))
                 estat = "títol"
                 titol = ""
@@ -129,15 +176,20 @@ def processa_continguts(f):
                 pes = ""
                 respostes = []
             elif lin.startswith(".. resposta:"):    # s'ha llegit una altra resposta
-                pes = lin.lstrip(".. resposta:").strip()
-                if pes not in ('+', '-'):
+                noupes = lin.lstrip(".. resposta:").strip()
+                if noupes not in ('+', '-'):
                     print >> sys.stderr, "WARNING: resposta sense pes (lin %s)"%nlin
                 respostes.append((resposta, pes))
+                if len(respostes)>=MAX_RESPOSTES:
+                    print >> sys.stderr, "WARNING: més de %s respostes!"%MAX_RESPOSTES
                 resposta = ""
+                pes = noupes
             else:
                 resposta += lin
     if estat == "resposta": # encara no s'ha guardat la darrera pregunta
         respostes.append((resposta, pes))
+        if len(respostes)>=MAX_RESPOSTES:
+            print >> sys.stderr, "WARNING: més de %s respostes!"%MAX_RESPOSTES
         preguntes.append(Pregunta(titol, enunciat, respostes))
 
     return preguntes
@@ -147,6 +199,19 @@ def mostra_preguntes(preguntes):
     for i in range(len(preguntes)):
         p = preguntes[i]
         p.mostra_pregunta(i+1)
+#
+def mostra_titols(preguntes):
+    """ mostra la llista de títols i pesos de les preguntes"""
+    # mostra els títols de les respostes
+    for i in range(len(preguntes)):
+        p = preguntes[i]
+        p.mostra_noms_respostes(i+1)
+    print "\n"*2
+    # mostra els pesos de les respostes
+    for i in range(len(preguntes)):
+        p = preguntes[i]
+        p.mostra_pesos_respostes(i+1)
+    print
 #
 def valida_parametres():
     """ valida els paràmetres de l'entrada.
@@ -158,8 +223,8 @@ def valida_parametres():
             None: si els paràmetres no són correctes
             fitxer: si els paràmetres són correctes
         """
-    if len(sys.argv)<3 or len(sys.argv)>5:
-        print >> sys.stderr, "Ús: %s numver nomfitxer.quiz [--force] [--noshuffle]"%sys.argv[0]
+    if len(sys.argv)<3:
+        print >> sys.stderr, "Ús: %s numver nomfitxer.quiz [--force] [--noshuffle] [--showtitles]"%sys.argv[0]
         return None
 
     if not sys.argv[1].isdigit() or int(sys.argv[1]) < 1:
@@ -180,11 +245,15 @@ def valida_parametres():
 
     force = False
     shuffle = True
+    showtitles = False
     if len(sys.argv) >= 3:
         if "--force" in (sys.argv[2:]):
             force = True
+            print >> sys.stderr, "WARNING: opció --force encara no implementada"
         if "--noshuffle" in (sys.argv[2:]):
             shuffle=False
+        if "--showtitles" in (sys.argv[2:]):
+            showtitles=True;
 
     outtext = composa_nom_text(fitxer)
     outsol  = composa_nom_solucions(fitxer)
@@ -192,7 +261,7 @@ def valida_parametres():
         print >> sys.stderr, "Error: trobats %s o/i %s. Elimina'ls o fes servir l'opció --force"%(outtext, outsol)
         return None
 
-    return numver, fitxer, shuffle
+    return numver, fitxer, shuffle, showtitles
 #
 def composa_nom_text(fitxer):
     """ retorna el nom del fitxer de sortida a generar amb les preguntes
@@ -206,21 +275,23 @@ def composa_nom_solucions(fitxer):
     base, _ = os.path.splitext(fitxer)
     return "%s.solucions.rst"
 #
-def generaVersions(numver, preguntes, shuffle):
+def generaVersions(numver, preguntes, shuffle, showtitles):
     for i in range(numver): 
         if shuffle: 
             barreja(preguntes)
+        if showtitles:
+            mostra_titols(preguntes)
         mostra_preguntes(preguntes)
 #
 def main():
     validacio = valida_parametres()
     if validacio == None:
         return 1
-    numver, fitxer, shuffle = validacio
+    numver, fitxer, shuffle, showtitles = validacio
     f = open(fitxer)
     preguntes = processa_continguts(f)
     f.close()
-    generaVersions(numver, preguntes, shuffle)
+    generaVersions(numver, preguntes, shuffle, showtitles)
     return 0
 #
 if __name__=="__main__":
