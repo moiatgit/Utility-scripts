@@ -49,6 +49,9 @@ class Pregunta:
 
     def processa_respostes(self, respostes):
         """ calcula els pesos relatius de les respostes i els retorna """
+        if len(respostes)==0:
+            return []
+
         positives = []
         negatives = []
         for r in respostes:
@@ -89,14 +92,15 @@ class Pregunta:
         print self.enunciat
         print
 
-        print "-"*4     # separació de les respostes
-        print
-
-        # mostra les diferents respostes
-        for i in range(len(self.respostes)):
-            print "*%s)*"%chr(ord("a")+i),
-            print self.respostes[i][0]
+        if len(self.respostes) > 0:
+            print "-"*4     # separació de les respostes
             print
+
+            # mostra les diferents respostes
+            for i in range(len(self.respostes)):
+                print "*%s)*"%chr(ord("a")+i),
+                print self.respostes[i][0]
+                print
 
     def barreja_respostes(self):
         """ barreja les respostes """
@@ -161,12 +165,20 @@ def processa_continguts(f):
                 if pes not in ('+', '-'):
                     print >> sys.stderr, "WARNING: resposta sense pes (lin %s)"%nlin
                 estat = "resposta"      # s'està llegint una resposta
+            elif lin.startswith(".. pregunta"): # pregunta anterior sense respostes
+                preguntes.append(Pregunta(titol, enunciat, respostes))
+                estat = "títol"
+                titol = ""
+                enunciat = ""
+                resposta = ""
+                pes = ""
+                respostes = []
             else:
                 enunciat += lin
         elif estat == "resposta":
             if lin.startswith(".. pregunta:"):  # s'han acabat les respostes
                 respostes.append((resposta, pes))
-                if len(respostes)>=MAX_RESPOSTES:
+                if len(respostes)>MAX_RESPOSTES:
                     print >> sys.stderr, "WARNING: més de %s respostes!"%MAX_RESPOSTES
                 preguntes.append(Pregunta(titol, enunciat, respostes))
                 estat = "títol"
@@ -186,9 +198,10 @@ def processa_continguts(f):
                 pes = noupes
             else:
                 resposta += lin
-    if estat == "resposta": # encara no s'ha guardat la darrera pregunta
-        respostes.append((resposta, pes))
-        if len(respostes)>=MAX_RESPOSTES:
+    if estat in ("resposta", "enunciat"): # cal guardar la darrera pregunta
+        if estat == "resposta":
+            respostes.append((resposta, pes))
+        if len(respostes)>MAX_RESPOSTES:
             print >> sys.stderr, "WARNING: més de %s respostes!"%MAX_RESPOSTES
         preguntes.append(Pregunta(titol, enunciat, respostes))
 
