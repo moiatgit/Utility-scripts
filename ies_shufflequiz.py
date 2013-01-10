@@ -16,6 +16,9 @@
 #       --noshuffle: opcionalment permet indicat que no es barregin les preguntes
 #       ni les respostes.
 #
+#       --showtitles: opcionalment permet veure els pesos de les preguntes
+#       i l'examen corregit
+#
 #  L'entrada ha de tenir el format
 #       .. pregunta:
 #       títol de la pregunta
@@ -75,17 +78,22 @@ class Pregunta:
                 processades.append((text, pesnegatiu))
         return processades
 
-    def mostra_pregunta(self, num=0):
-        """ mostra la pregunta amb el número indicat. """
+    def mostra_pregunta(self, num=0, ambpes=False):
+        """ mostra la pregunta amb el número indicat. 
+            En cas que ambpes sigui cert, mostra també els pesos amb
+            les respostes. """
         if num == 0:
             titol = "Pregunta: %s"%self.titol
         else:
             titol = "Pregunta %s: %s"%(num, self.titol)
 
+        if ambpes:
+            titol = "<CORRECCIÓ> " + titol
+
         # mostra el títol de la pregunta
         print
         print titol
-        print "-" * len(titol)
+        print "-" * len(titol.decode("utf-8"))
         print
 
         # mostra l'enunciat
@@ -98,6 +106,8 @@ class Pregunta:
 
             # mostra les diferents respostes
             for i in range(len(self.respostes)):
+                if ambpes:
+                    print "[%.2f]"%self.respostes[i][1],
                 print "*%s)*"%chr(ord("a")+i),
                 print self.respostes[i][0]
                 print
@@ -226,6 +236,12 @@ def mostra_titols(preguntes):
         p.mostra_pesos_respostes(i+1)
     print
 #
+def mostra_preguntes_respostes(preguntes):
+    """ mostra la llista de preguntes tot indicant els pesos de les respostes """
+    for i in range(len(preguntes)):
+        p = preguntes[i]
+        p.mostra_pregunta(i+1, True)
+#
 def valida_parametres():
     """ valida els paràmetres de l'entrada.
         Valida que el nombre de versions sigui un enter de 1 a 28.
@@ -293,7 +309,11 @@ def generaVersions(numver, preguntes, shuffle, showtitles):
         if shuffle: 
             barreja(preguntes)
         if showtitles:
+            print ".. " + "#"*60 + "\n\n"
             mostra_titols(preguntes)
+            print "\n\n.. " + "#"*60 + "\n\n"
+            mostra_preguntes_respostes(preguntes)
+            print "\n\n.. " + "#"*60 + "\n\n"
         mostra_preguntes(preguntes)
 #
 def main():
