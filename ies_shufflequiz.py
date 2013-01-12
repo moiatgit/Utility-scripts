@@ -16,6 +16,9 @@
 #       --noshuffle: opcionalment permet indicat que no es barregin les preguntes
 #       ni les respostes.
 #
+#       --showtitles: opcionalment permet veure els pesos de les preguntes
+#       i l'examen corregit
+#
 #  L'entrada ha de tenir el format
 #       .. pregunta:
 #       títol de la pregunta
@@ -49,6 +52,9 @@ class Pregunta:
 
     def processa_respostes(self, respostes):
         """ calcula els pesos relatius de les respostes i els retorna """
+        if len(respostes)==0:
+            return []
+
         positives = []
         negatives = []
         for r in respostes:
@@ -72,31 +78,39 @@ class Pregunta:
                 processades.append((text, pesnegatiu))
         return processades
 
-    def mostra_pregunta(self, num=0):
-        """ mostra la pregunta amb el número indicat. """
+    def mostra_pregunta(self, num=0, ambpes=False):
+        """ mostra la pregunta amb el número indicat. 
+            En cas que ambpes sigui cert, mostra també els pesos amb
+            les respostes. """
         if num == 0:
             titol = "Pregunta: %s"%self.titol
         else:
             titol = "Pregunta %s: %s"%(num, self.titol)
 
+        if ambpes:
+            titol = "<CORRECCIÓ> " + titol
+
         # mostra el títol de la pregunta
         print
         print titol
-        print "-" * len(titol)
+        print "-" * len(titol.decode("utf-8"))
         print
 
         # mostra l'enunciat
         print self.enunciat
         print
 
-        print "-"*4     # separació de les respostes
-        print
-
-        # mostra les diferents respostes
-        for i in range(len(self.respostes)):
-            print "*%s)*"%chr(ord("a")+i),
-            print self.respostes[i][0]
+        if len(self.respostes) > 0:
+            print "-"*4     # separació de les respostes
             print
+
+            # mostra les diferents respostes
+            for i in range(len(self.respostes)):
+                if ambpes:
+                    print "[%.2f]"%self.respostes[i][1],
+                print "*%s)*"%chr(ord("a")+i),
+                print self.respostes[i][0]
+                print
 
     def barreja_respostes(self):
         """ barreja les respostes """
@@ -161,12 +175,20 @@ def processa_continguts(f):
                 if pes not in ('+', '-'):
                     print >> sys.stderr, "WARNING: resposta sense pes (lin %s)"%nlin
                 estat = "resposta"      # s'està llegint una resposta
+            elif lin.startswith(".. pregunta"): # pregunta anterior sense respostes
+                preguntes.append(Pregunta(titol, enunciat, respostes))
+                estat = "títol"
+                titol = ""
+                enunciat = ""
+                resposta = ""
+                pes = ""
+                respostes = []
             else:
                 enunciat += lin
         elif estat == "resposta":
             if lin.startswith(".. pregunta:"):  # s'han acabat les respostes
                 respostes.append((resposta, pes))
-                if len(respostes)>=MAX_RESPOSTES:
+                if len(respostes)>MAX_RESPOSTES:
                     print >> sys.stderr, "WARNING: més de %s respostes!"%MAX_RESPOSTES
                 preguntes.append(Pregunta(titol, enunciat, respostes))
                 estat = "títol"
@@ -186,9 +208,10 @@ def processa_continguts(f):
                 pes = noupes
             else:
                 resposta += lin
-    if estat == "resposta": # encara no s'ha guardat la darrera pregunta
-        respostes.append((resposta, pes))
-        if len(respostes)>=MAX_RESPOSTES:
+    if estat in ("resposta", "enunciat"): # cal guardar la darrera pregunta
+        if estat == "resposta":
+            respostes.append((resposta, pes))
+        if len(respostes)>MAX_RESPOSTES:
             print >> sys.stderr, "WARNING: més de %s respostes!"%MAX_RESPOSTES
         preguntes.append(Pregunta(titol, enunciat, respostes))
 
@@ -212,6 +235,12 @@ def mostra_titols(preguntes):
         p = preguntes[i]
         p.mostra_pesos_respostes(i+1)
     print
+#
+def mostra_preguntes_respostes(preguntes):
+    """ mostra la llista de preguntes tot indicant els pesos de les respostes """
+    for i in range(len(preguntes)):
+        p = preguntes[i]
+        p.mostra_pregunta(i+1, True)
 #
 def valida_parametres():
     """ valida els paràmetres de l'entrada.
@@ -280,7 +309,11 @@ def generaVersions(numver, preguntes, shuffle, showtitles):
         if shuffle: 
             barreja(preguntes)
         if showtitles:
+            print ".. " + "#"*60 + "\n\n"
             mostra_titols(preguntes)
+            print "\n\n.. " + "#"*60 + "\n\n"
+            mostra_preguntes_respostes(preguntes)
+            print "\n\n.. " + "#"*60 + "\n\n"
         mostra_preguntes(preguntes)
 #
 def main():
