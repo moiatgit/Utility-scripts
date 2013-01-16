@@ -3,6 +3,17 @@
 # Synchronization script
 #
 # tries to synchronize local repository with its pen's counterpart
+# It accepts one or more pendrives
+#
+# ~/.Skz should contain configuration in the following format:
+#    LOCAL="«path to local rep"
+#    PEN=("«path to one pendrive»" "«path to another pendrive»")
+#    LOCAL_NAME=«host name rep»
+#    PEN_NAME=("«pen1 name rep»" "«pen2 name rep»")
+#
+# TODO: add robustness
+#       add option to prepare a repositori from given path and add it to
+#       everywhere it should be: .Skz, remotes...
 #
 source ~/.Skz
 #
@@ -30,15 +41,31 @@ commit () {
 if [ -d $LOCAL ];
 then
     commit $LOCAL
-    if [ -d $PEN ];
+
+    num_pen=${#PEN[@]}
+    num_pen_name=${#PEN_NAME[@]}
+    if [ "$num_pen" -ne "$num_pen_name" ];
     then
-        commit $PEN
-        cd $LOCAL
-        echo "··· Pulling from $PEN"
-        git pull $PEN_NAME master
-        cd $PEN
-        echo "··· Pulling from $LOCAL"
-        git pull $LOCAL_NAME master
+        echo "ERROR: PEN and PEN_NAME length's must match"
+        exit 1
     fi
+    #
+    i=0
+    while [ "$i" -lt "$num_pen" ];
+    do
+        pen_path=${PEN[$i]}
+        if [ -d "$pen_path" ];
+        then
+            rep_name=${PEN_NAME[$i]}
+            commit $pen_path
+            cd $LOCAL
+            echo "··· Pulling from $pen_path"
+            git pull $rep_name master
+            cd $pen_path
+            echo "··· Pulling from $LOCAL"
+            git pull $LOCAL_NAME master
+        fi
+        let "i++"
+    done
 fi
 
