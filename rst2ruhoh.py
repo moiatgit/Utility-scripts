@@ -24,7 +24,7 @@ import os, shutil, sys, re, datetime
 from BeautifulSoup import BeautifulSoup, Comment
 from docutils.core import publish_cmdline, default_description
 from ConfigParser import ConfigParser
-import optparse
+import argparse
 #
 CONF_FILENAME = os.path.expanduser("~/.rst2ruhoh")  # configuration filename
 #
@@ -142,26 +142,23 @@ def checkParams():
     finishes execution with an error code.
     When everything is ok, it returns the configuration information
     in a tuple: rst_filename, ruhoh_path """
-    p = optparse.OptionParser(description="Converts from rst to ruhoh format", version="1.0")
-    p.add_option("-s", "--source", action="store", help="Source file path with .rst extension", nargs=1, dest="source")
-    p.add_option("-d", "--draft", action="store_true", help="Mark converted file as draft", dest="draft")
-    p.add_option("-r", "--ruhoh_path", action="store", help="Path to ruhoh local copy. Overrides config file specs.", nargs=1, dest="ruhoh_path")
-    options, arguments = p.parse_args()
+    p = argparse.ArgumentParser(description="Converts from rst to ruhoh format", version="1.0")
+    p.add_argument('paths', metavar='path', nargs='+', help="Source file path with .rst extension")
+    p.add_argument("-d", "--draft", action="store_true", help="Mark converted file as draft", dest="draft")
+    p.add_argument("-r", "--ruhoh_path", action="store", help="Path to ruhoh local copy. Overrides config file specs.", dest="ruhoh_path")
+    options = p.parse_args()
     #
-    if not options.source:
-        print >> sys.stderr, "Error: source expected"
-        sys.exit(2)
+    sourcelist = options.paths
     #
-    source = options.source
-    #
-    path, ext = os.path.splitext(source)
-    if ext != ".rst":
-        print >> sys.stderr, "Error: .rst extension expected"
-        sys.exit(2)
-    #
-    if not os.path.exists(source):
-        print >> sys.stderr, "Error: file not found: %s"%source
-        sys.exit(4)
+    for source in sourcelist:
+        path, ext = os.path.splitext(source)
+        if ext != ".rst":
+            print >> sys.stderr, "Error: .rst extension expected in %s"%source
+            sys.exit(2)
+        #
+        if not os.path.exists(source):
+            print >> sys.stderr, "Error: file not found: %s"%source
+            sys.exit(4)
     #
     if options.ruhoh_path:
         ruhoh_path = options.ruhoh_path
@@ -183,7 +180,7 @@ def checkParams():
     #
     draft = options.draft
     #
-    return source, ruhoh_path, draft
+    return sourcelist, ruhoh_path, draft
 #
 def main():
 
@@ -191,22 +188,24 @@ def main():
     setLocale()
 
     # get configuration information
-    rst_filename, ruhoh_path, draft = checkParams()
+    sourcelist, ruhoh_path, draft = checkParams()
 
-    # prepare params for docutils
-    sys.argv = [sys.argv[0], rst_filename]
+    for rst_filename in sourcelist:
+        # prepare params for docutils
+        sys.argv = [sys.argv[0], rst_filename]
 
-    # define html output filename for docutils
-    html_filename = compose_tmp_name(rst_filename)
-    sys.argv.append(html_filename)
+        # define html output filename for docutils
+        html_filename = compose_tmp_name(rst_filename)
+        sys.argv.append(html_filename)
 
-    # generate html conversion
-    description = ('Generates ruhoh\'s md documents from standalone '
-                   'reStructuredText sources.  ' + default_description)
-    publish_cmdline(writer_name='html', description=description)
+        # generate html conversion
+        description = ('Generates ruhoh\'s md documents from standalone '
+                       'reStructuredText sources.  ' + default_description)
+        publish_cmdline(writer_name='html', description=description)
 
-    # create md for ruhoh
-    create_md(html_filename, ruhoh_path, rst_filename, draft)
+        # create md for ruhoh
+        create_md(html_filename, ruhoh_path, rst_filename, draft)
+        #
     return 0
 #
 if __name__=="__main__":
