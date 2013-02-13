@@ -79,7 +79,7 @@ class Pregunta:
         return processades
 
     def mostra_pregunta(self, num=0, ambpes=False):
-        """ mostra la pregunta amb el número indicat. 
+        """ mostra la pregunta amb el número indicat.
             En cas que ambpes sigui cert, mostra també els pesos amb
             les respostes. """
         if num == 0:
@@ -246,7 +246,7 @@ def valida_parametres():
     """ valida els paràmetres de l'entrada.
         Valida que el nombre de versions sigui un enter de 1 a 28.
         Valida que s'hagi especificat un path de fitxer
-        existent, llegible i amb extensió .quiz. 
+        existent, llegible i amb extensió .quiz.
         Mostra missatge d'error adequat pels paràmetres
         Retorna:
             None: si els paràmetres no són correctes
@@ -276,12 +276,12 @@ def valida_parametres():
     shuffle = True
     showtitles = False
     if len(sys.argv) >= 3:
-        if "--force" in (sys.argv[2:]):
+        if "--force" in sys.argv[3:]:
             force = True
             print >> sys.stderr, "WARNING: opció --force encara no implementada"
-        if "--noshuffle" in (sys.argv[2:]):
+        if "--noshuffle" in sys.argv[3:]:
             shuffle=False
-        if "--showtitles" in (sys.argv[2:]):
+        if "--showtitles" in sys.argv[3:]:
             showtitles=True;
 
     outtext = composa_nom_text(fitxer)
@@ -305,8 +305,8 @@ def composa_nom_solucions(fitxer):
     return "%s.solucions.rst"
 #
 def generaVersions(numver, preguntes, shuffle, showtitles):
-    for i in range(numver): 
-        if shuffle: 
+    for i in range(numver):
+        if shuffle:
             barreja(preguntes)
         if showtitles:
             print ".. " + "#"*60 + "\n\n"
