@@ -8,6 +8,7 @@ echo "Prem c + <ENTER> per continuar"
 read resposta
 if [ "$resposta" == "c" ]
 then
+    find . -name *.class -delete # elimina els fitxers ja compilats
     oldIFS=$IFS
     IFS=$'\n'       # change field separator
     fitxers=`find . -name *.java -type f`
@@ -15,13 +16,13 @@ then
     do
         nomdir=`dirname "$f"`
         nomfit=`basename "$f"`
-        cd "$nomdir"
-        `javac $nomfit &> /dev/null`
+        cd "$nomdir" &> /dev/null
+        javac $nomfit &> /dev/null
         if [ $? -ne 0 ];
         then
             echo "$f ko";
         fi
-        cd -
+        cd - &> /dev/null
     done
     IFS=$oldIFS
 else
