@@ -8,10 +8,10 @@ echo "Prem c + <ENTER> per continuar"
 read resposta
 if [ "$resposta" == "c" ]
 then
-    find . -name *.class -delete # elimina els fitxers ja compilats
+    find . -name '*.class' -delete # elimina els fitxers ja compilats
     oldIFS=$IFS
     IFS=$'\n'       # change field separator
-    fitxers=`find . -name *.java -type f`
+    fitxers=`find . -name '*.java' -type f`
     for f in $fitxers
     do
         nomdir=`dirname "$f"`
