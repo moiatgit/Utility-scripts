@@ -15,9 +15,14 @@
 #           Com a sortida es genera un csv separat per _DELIMITADOR_DESTINACIO, on
 #               - no hi ha capçalera
 #               - la primera columna indica l'identificador de l'alumne
-#               - la segona columna indica la qualificació moodle en base 100 (els NP d'entrada passen a ser 0)
-#               - la tercera columna indica un comentari en html amb NP si la nota era no presentat, o una composició
-#                 de les columnes restants de l'entrada en forma de UL amb <li>capçalera: <b>valor</b></li>
+#               - la segona columna indica la qualificació moodle en base 100
+#               (els NP d'entrada passen a ser 0)
+#               - la tercera columna indica un comentari en html amb NP si la
+#               nota era no presentat, o una composició
+#                 de les columnes restants de l'entrada en forma de UL amb
+#                 <li>capçalera: <b>valor</b></li> excepte quan la capçalera de
+#                 la columna es digui "COMENTARI" que apareixerà fora de la
+#                 llista ordenada.
 #
 import csv
 import optparse
@@ -54,15 +59,30 @@ def llegeix_files(reader, ncol):
     return files
 #
 def composa_comentaris(cap, fila):
-    """ composa els comentaris de la fila a partir de la capçalera """
+    """ composa els comentaris de la fila a partir de la capçalera.
+        Les entrades que tinguin com a capçalera la paraula "COMENTARI" 
+        apareixeran tal qual. La resta es formataran dins d'una llista no 
+        ordenada. """
+    enllista = False    # indica si s'està composant dins d'una llista
     comentaris = list()
     for i in range(len(fila) - 2):
         if fila[i+2]<>"":   # filtra els elements que no tenen informació
-            comentaris.append("<li>%s: <b>%s</b></li>"%(cap[i+2], fila[i+2]))
+            if cap[i+2] == "COMENTARI":
+                if enllista:    # cal tancar la llista anterior abans d'afegir el comentari
+                    comentaris.append("</ul>")
+                comentaris.append("<p>%s</p>"%fila[i+2])
+                enllista=False
+            else:
+                if not enllista:      # cal obrir una llista
+                    comentaris.append("<ul>")
+                    enllista=True
+                comentaris.append("<li>%s: <b>%s</b></li>"%(cap[i+2], fila[i+2]))
     if len(comentaris)==0:
         return ""
     else:
-        return "<ul>%s</ul>"%("".join(comentaris))
+        if enllista:    # cal tancar la darrera llista
+            comentaris.append("</ul>")
+        return "".join(comentaris)
 #
 def formata_files(cap, files):
     """ formata les files a partir de la capçalera.
