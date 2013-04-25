@@ -16,6 +16,19 @@
 # In the meantime, a simple workaround is hardcoding ruhoh's expected href
 # in the rst file.
 # 
+# You might want to allow completion for this script. Put the following code
+# somewhere accessible by your .bashrc or source it
+
+#   _rst2ruhoh()
+#   {
+#       local cur
+#       COMPREPLY=()
+#       _get_comp_words_by_ref cur
+#
+#       _filedir rst
+#   }
+#   complete -o default -o nospace -F _rst2ruhoh  rst2ruhoh.py
+
 # TODO: this is a rather Q&D version. You might want to clean it up 
 # before someone's comments turn your face red :s
 
