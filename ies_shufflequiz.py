@@ -74,7 +74,6 @@ class Pregunta:
             if r[1] == "+":
                 processades.append((text, pespositiu))
             else:
-
                 processades.append((text, pesnegatiu))
         return processades
 
