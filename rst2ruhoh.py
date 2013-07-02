@@ -37,15 +37,9 @@ from BeautifulSoup import BeautifulSoup, Comment
 from docutils.core import publish_cmdline, default_description
 from ConfigParser import ConfigParser
 import argparse
+import tempfile
 #
 CONF_FILENAME = os.path.expanduser("~/.rst2ruhoh")  # configuration filename
-#
-def compose_tmp_name(rst_filename):
-    """ from rst filename composes a html temporal file name
-        hopefuly difficult to collide with an existing one """
-    name, _ = os.path.splitext(os.path.basename(rst_filename))
-    d = datetime.datetime.isoformat(datetime.datetime.now())
-    return "/tmp/%s_%s.html"%(d, name)
 #
 def create_md(html_filename, ruhoh_path, rst_filename, draft):
     """ creates the md file from html.
@@ -207,7 +201,8 @@ def main():
         sys.argv = [sys.argv[0], rst_filename]
 
         # define html output filename for docutils
-        html_filename = compose_tmp_name(rst_filename)
+        html_file = tempfile.NamedTemporaryFile()
+        html_filename = html_file.name
         sys.argv.append(html_filename)
 
         # generate html conversion
