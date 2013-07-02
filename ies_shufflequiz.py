@@ -1,11 +1,9 @@
 #! /usr/bin/env python
 # encoding: utf-8
 #
-#   Ús: sys.argv[0] numver nomfitxer.quiz [--force] [--noshuffle]
+#   Ús: sys.argv[0] nomfitxer.quiz [--force] [--noshuffle]
 #
 #   On:
-#
-#       numver: nombre de versions a composar
 #
 #       nomfitxer.quiz: nom del fitxer amb les preguntes i respostes
 #       reordenades
@@ -38,6 +36,8 @@
 #   esperat) així com alguns elements de parametrització (ex. format de sortida) i
 #   d'ajuda a l'ús (ex. capacitat per processar respostes i pesos, i de generar
 #   un document associat amb la correcció de l'ordenació generada)
+#  Mentre no s'implementa la funcionalitat de més d'una versió, numver és assignat
+#  directament, en comptes de recuperar-lo del primer paràmetre.
 #
 import os, sys, random, re
 #
@@ -253,16 +253,12 @@ def valida_parametres():
             fitxer: si els paràmetres són correctes
         """
     if len(sys.argv)<3:
-        print >> sys.stderr, "Ús: %s numver nomfitxer.quiz [--force] [--noshuffle] [--showtitles]"%sys.argv[0]
+        print >> sys.stderr, "Ús: %s nomfitxer.quiz [--force] [--noshuffle] [--showtitles]"%sys.argv[0]
         return None
 
-    if not sys.argv[1].isdigit() or int(sys.argv[1]) < 1:
-        print >> sys.stderr, "Error: %s no és un nombre adequat"%sys.argv[1]
-        return None
+    numver=1
 
-    numver=int(sys.argv[1])
-
-    fitxer = sys.argv[2]
+    fitxer = sys.argv[1]
     base, ext = os.path.splitext(fitxer)
     if ext <> ".quiz":
         print >> sys.stderr, "Error: %s no és un fitxer .quiz"%fitxer
@@ -275,13 +271,13 @@ def valida_parametres():
     force = False
     shuffle = True
     showtitles = False
-    if len(sys.argv) >= 3:
-        if "--force" in sys.argv[3:]:
+    if len(sys.argv) >= 2:
+        if "--force" in sys.argv[2:]:
             force = True
             print >> sys.stderr, "WARNING: opció --force encara no implementada"
-        if "--noshuffle" in sys.argv[3:]:
+        if "--noshuffle" in sys.argv[2:]:
             shuffle=False
-        if "--showtitles" in sys.argv[3:]:
+        if "--showtitles" in sys.argv[2:]:
             showtitles=True;
 
     outtext = composa_nom_text(fitxer)
