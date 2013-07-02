@@ -41,29 +41,47 @@ import tempfile
 #
 CONF_FILENAME = os.path.expanduser("~/.rst2ruhoh")  # configuration filename
 #
-def create_md(html_filename, ruhoh_path, rst_filename, draft):
-    """ creates the md file from html.
-        If draft, it creates the document with draft option"""
-    html = open(html_filename).read()
-    soup = BeautifulSoup(html)
-    soup = soup.body.contents[1]    # cleaned up to body
-    # get meta information
+def getMetaInfo(soup):
+    """ get all meta information included in soup and returns it in a list """
     meta = []
     for comment in soup.findAll(text=lambda text:isinstance(text, Comment)):
         c = str(comment).lstrip("<!--").rstrip("-->").strip()
         if re.match("\w+: .+", c):  # is a setting
             meta.append(c)
             comment.extract()
-    # remove title
+    return meta
+#
+def extractTitle(soup):
+    """ removes title from soup and returns it.
+        It returns empty string when no title is found. """
     title = soup.find("h1")
     if title.has_key("class"):
-        # in case meta has no title, this title will be set.
-        for m in meta:
-            if m.startswith("title"):
-                break
-        else:
-            meta.insert(0, "title: %s"%title.text.encode('utf-8'))
+        result = title.text.encode('utf-8')
         title.extract()
+    else:
+        result = ''
+    return result
+#
+def addMetaIfMissing(meta, tag, val):
+    """ adds new tag to meta list with val if it is not already there """
+    for m in meta:
+        if m.startswith(tag):
+            break
+    else:
+        meta.insert(0, "%s: %s"%(tag, val))
+#
+def create_md(html_filename, ruhoh_path, rst_filename, draft):
+    """ creates the md file from html.
+        If draft, it creates the document with draft option """
+    html = open(html_filename).read()
+    soup = BeautifulSoup(html)
+    soup = soup.body.contents[1]    # cleaned up to body
+    meta = getMetaInfo(soup)
+
+    title = extractTitle(soup) # remove title
+    if title:
+        addMetaIfMissing(meta, 'title', title)
+
     # set date if not present in meta
     for m in meta:
         if m.startswith("date"):
