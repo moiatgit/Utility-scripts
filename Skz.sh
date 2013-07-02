@@ -21,6 +21,7 @@
 #       everywhere it should be: .Skz, remotes...
 #
 source ~/.Skz
+
 #
 if [ -z "$1" ];
 then
