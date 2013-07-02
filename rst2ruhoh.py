@@ -1,23 +1,25 @@
 #! /usr/bin/env python
 # encoding: utf-8
-#
-# This script takes a .rst file as first argument and converts it to 
-# a markdown with the same name and extension .md prepared for being
+
+# This script takes a .rst file as first argument and converts it to a
+# markdown with the same name and extension .md prepared for being
 # used at ruhoh blogs
-#
+
 # required: docutils
 
-# TODO: when referencing local documents from other documents there's a mismatch
-# between urls: rst files should reference to other rst files but ruhoh requires
-# {{url}}/category/title as href. To solve it, it is necessary 
-# a not-so-hard change: check whether the link hrefs to a local .rst file. Then
-# try to extract from the referenced file the title and the category. Then replace
-# the link to {{url}}/categories/title.
-# In the meantime, a simple workaround is hardcoding ruhoh's expected href
-# in the rst file.
-# 
-# You might want to allow completion for this script. Put the following code
-# somewhere accessible by your .bashrc or source it
+# TODO: when referencing local documents from other documents there's
+# a mismatch between urls: rst files should reference to other rst
+# files but ruhoh requires {{url}}/category/title as href. To solve
+# it, it is necessary a not-so-hard change: 
+#  check whether the link hrefs to a local .rst file
+#  then extract from the referenced file the title and the category
+#  then replace the link to {{url}}/categories/title.
+
+# In the meantime, a simple workaround is hardcoding ruhoh's expected
+# href in the rst file.
+
+# You might want to allow completion for this script. Put the
+# following code somewhere accessible by your .bashrc or source it
 
 #   _rst2ruhoh()
 #   {
@@ -28,9 +30,6 @@
 #       _filedir rst
 #   }
 #   complete -o default -o nospace -F _rst2ruhoh  rst2ruhoh.py
-
-# TODO: this is a rather Q&D version. You might want to clean it up 
-# before someone's comments turn your face red :s
 
 #
 import os, shutil, sys, re, datetime

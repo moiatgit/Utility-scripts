@@ -21,7 +21,7 @@ then
 fi
 
 sfname=$(basename $1)
-dfpath=$2/$sfname
+dfpath=${2%/}/$sfname
 
 if [ -f $dfpath ];
 then

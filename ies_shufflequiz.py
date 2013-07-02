@@ -11,8 +11,11 @@
 #       --force: opcionalment permet indicar que es poden sobrescriure
 #       els fitxers de sortida.
 
-#       --noshuffle: opcionalment permet indicat que no es barregin les preguntes
+#       --noshuffle: opcionalment permet indicar que no es barregin les preguntes
 #       ni les respostes.
+#
+#       --answersonly: opcionalment permet indicar que només es barregin les
+#       respostes.
 #
 #       --showtitles: opcionalment permet veure els pesos de les preguntes
 #       i l'examen corregit
@@ -22,7 +25,7 @@
 #       títol de la pregunta
 #       .. enunciat:
 #       text de l'enunciat
-#       .. resposta: [+-]
+#       .. resposta: [+-]f?
 #       text de la resposta
 #       «altres respostes»
 #       «altres preguntes»
@@ -48,10 +51,11 @@ class Pregunta:
         """ inicialitza la pregunta """
         self.titol = titol.strip("\n")
         self.enunciat = enunciat.strip("\n")
-        self.respostes = self.processa_respostes(respostes)
+        self.respostes, self.finals = self.processa_respostes(respostes)
 
     def processa_respostes(self, respostes):
-        """ calcula els pesos relatius de les respostes i els retorna """
+        """ calcula els pesos relatius de les respostes i els retorna.
+            separa les respostes barrejables de les finals """
         if len(respostes)==0:
             return []
 
@@ -69,14 +73,19 @@ class Pregunta:
         pesnegatiu = -1.0/len(negatives) if len(negatives)>0 else 0.0
 
         processades = []
+        finals = []
         for r in respostes:
             text = r[0].strip("\n")
             if r[1] == "+":
-                processades.append((text, pespositiu))
+                tupla = (text, pespositiu)
             else:
+                tupla = (text, pesnegatiu)
+            if (r[2]):
+                finals.append(tupla)
+            else:
+                processades.append(tupla)
 
-                processades.append((text, pesnegatiu))
-        return processades
+        return processades, finals
 
     def mostra_pregunta(self, num=0, ambpes=False):
         """ mostra la pregunta amb el número indicat.
@@ -105,12 +114,14 @@ class Pregunta:
             print
 
             # mostra les diferents respostes
-            for i in range(len(self.respostes)):
+            respostes = self.respostes + self.finals
+            for i in range(len(respostes)):
                 if ambpes:
-                    print "[%.2f]"%self.respostes[i][1],
+                    print "[%.2f]"%respostes[i][1],
                 print "*%s)*"%chr(ord("a")+i),
-                print self.respostes[i][0]
+                print respostes[i][0]
                 print
+
 
     def barreja_respostes(self):
         """ barreja les respostes """
@@ -134,14 +145,35 @@ class Pregunta:
         print lin.replace(".", ","),
 
 #
-def barreja(preguntes):
+def barreja(preguntes, shuffle):
     """ a partir d'una llista de preguntes, genera una nova llista de preguntes
     en les que s'ha barrejat:
     1. les preguntes
     2. les respostes de cada pregunta """
-    for p in preguntes:
-        p.barreja_respostes()
-    random.shuffle(preguntes)
+    if shuffle < 2:
+        for p in preguntes:
+            p.barreja_respostes()
+        if shuffle < 1:
+            random.shuffle(preguntes)
+#
+def split_resposta(linia):
+    """ comprova si la línia conté l'inici d'una resposta.
+        Si no és així, retorna None.
+        Altrament retorna la tupla (pes, final) on pes és un valor [+-]
+        i final és un booleà que indica si la resposta ha de quedar al final
+        en cas de barreja """
+    res = None
+    if linia.startswith(".. resposta:"):
+        if linia.rstrip()[-1:] == 'f':
+            final = True
+            pes = linia.rstrip()[-2:-1]
+        else:
+            final = False
+            pes = linia.rstrip()[-1:]
+        if pes not in ('+', '-'):
+            print >> sys.stderr, "WARNING: resposta sense pes (lin %s)"%nlin
+        res = (pes, final)
+    return res
 #
 def processa_continguts(f):
     """ llegeix el fitxer i intenta interpretar les preguntes que inclou.
@@ -170,10 +202,9 @@ def processa_continguts(f):
             else:   # forma part del títol
                 titol += lin
         elif estat == "enunciat":
-            if lin.startswith(".. resposta:"):  # s'ha finalitzat l'enunciat
-                pes = lin.lstrip(".. resposta:").strip()
-                if pes not in ('+', '-'):
-                    print >> sys.stderr, "WARNING: resposta sense pes (lin %s)"%nlin
+            es_resposta = split_resposta(lin)
+            if es_resposta <> None:     # s'ha finalitzat l'enunciat
+                pes, final = es_resposta
                 estat = "resposta"      # s'està llegint una resposta
             elif lin.startswith(".. pregunta"): # pregunta anterior sense respostes
                 preguntes.append(Pregunta(titol, enunciat, respostes))
@@ -187,7 +218,7 @@ def processa_continguts(f):
                 enunciat += lin
         elif estat == "resposta":
             if lin.startswith(".. pregunta:"):  # s'han acabat les respostes
-                respostes.append((resposta, pes))
+                respostes.append((resposta, pes, final))
                 if len(respostes)>MAX_RESPOSTES:
                     print >> sys.stderr, "WARNING: més de %s respostes!"%MAX_RESPOSTES
                 preguntes.append(Pregunta(titol, enunciat, respostes))
@@ -197,20 +228,20 @@ def processa_continguts(f):
                 resposta = ""
                 pes = ""
                 respostes = []
-            elif lin.startswith(".. resposta:"):    # s'ha llegit una altra resposta
-                noupes = lin.lstrip(".. resposta:").strip()
-                if noupes not in ('+', '-'):
-                    print >> sys.stderr, "WARNING: resposta sense pes (lin %s)"%nlin
-                respostes.append((resposta, pes))
-                if len(respostes)>=MAX_RESPOSTES:
-                    print >> sys.stderr, "WARNING: més de %s respostes!"%MAX_RESPOSTES
-                resposta = ""
-                pes = noupes
             else:
-                resposta += lin
+                es_resposta = split_resposta(lin)
+                if es_resposta <> None:     # s'ha llegit una altra resposta
+                    noupes, final = es_resposta
+                    respostes.append((resposta, pes, final))
+                    if len(respostes)>=MAX_RESPOSTES:
+                        print >> sys.stderr, "WARNING: més de %s respostes!"%MAX_RESPOSTES
+                    resposta = ""
+                    pes = noupes
+                else:
+                    resposta += lin
     if estat in ("resposta", "enunciat"): # cal guardar la darrera pregunta
         if estat == "resposta":
-            respostes.append((resposta, pes))
+            respostes.append((resposta, pes, final))
         if len(respostes)>MAX_RESPOSTES:
             print >> sys.stderr, "WARNING: més de %s respostes!"%MAX_RESPOSTES
         preguntes.append(Pregunta(titol, enunciat, respostes))
@@ -253,7 +284,11 @@ def valida_parametres():
             fitxer: si els paràmetres són correctes
         """
     if len(sys.argv)<3:
-        print >> sys.stderr, "Ús: %s nomfitxer.quiz [--force] [--noshuffle] [--showtitles]"%sys.argv[0]
+        print >> sys.stderr, "Ús: %s numver nomfitxer.quiz [--force] [--noshuffle|--answersonly] [--showtitles]"%sys.argv[0]
+        return None
+
+    if not sys.argv[1].isdigit() or int(sys.argv[1]) < 1:
+        print >> sys.stderr, "Error: %s no és un nombre adequat"%sys.argv[1]
         return None
 
     numver=1
@@ -269,15 +304,17 @@ def valida_parametres():
         return None
 
     force = False
-    shuffle = True
+    shuffle = 0
     showtitles = False
     if len(sys.argv) >= 2:
         if "--force" in sys.argv[2:]:
             force = True
             print >> sys.stderr, "WARNING: opció --force encara no implementada"
-        if "--noshuffle" in sys.argv[2:]:
-            shuffle=False
-        if "--showtitles" in sys.argv[2:]:
+        if "--answersonly" in sys.argv[3:]:
+            shuffle=1
+        if "--noshuffle" in sys.argv[3:]:
+            shuffle=2
+        if "--showtitles" in sys.argv[3:]:
             showtitles=True;
 
     outtext = composa_nom_text(fitxer)
@@ -302,8 +339,7 @@ def composa_nom_solucions(fitxer):
 #
 def generaVersions(numver, preguntes, shuffle, showtitles):
     for i in range(numver):
-        if shuffle:
-            barreja(preguntes)
+        barreja(preguntes, shuffle)
         if showtitles:
             print ".. " + "#"*60 + "\n\n"
             mostra_titols(preguntes)
