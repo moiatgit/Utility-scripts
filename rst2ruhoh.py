@@ -82,24 +82,28 @@ def getCategory(meta):
         category = ""
     return category
 #
-def composeDestPathFromCategory(ruhoh_path, contentType, category):
+def composeDestPathFromCategory(ruhohPath, contentType, category):
     """ composes and returns the corresponding post path from the 
     given category and content type.
     Content types can be 'posts' or 'media' and define the paths
     for posts, and other resources (media) """
     if category == "":
-        path = os.path.join(ruhoh_path, contentType)
+        path = os.path.join(ruhohPath, contentType)
     else:
-        path = os.path.join(ruhoh_path, contentType, category)
-    print "XXX path: ", path
+        path = os.path.join(ruhohPath, contentType, category)
     return path
 #
-def create_md(html_filename, ruhoh_path, rst_filename, draft):
-    """ creates the md file from html.
-        If draft, it creates the document with draft option """
-    html = open(html_filename).read()
+def getSoupFromHtml(htmlPath):
+    """ returns soup from the html file """
+    html = open(htmlPath).read()
     soup = BeautifulSoup(html)
     soup = soup.body.contents[1]    # cleaned up to body
+    return soup
+
+def create_md(htmlPath, ruhohPath, rstPath, draft):
+    """ creates the md file from html.
+        If draft, it creates the document with draft option """
+    soup = getSoupFromHtml(htmlPath)
     meta = getMetaInfo(soup)
 
     title = extractTitle(soup) # remove title
@@ -111,8 +115,9 @@ def create_md(html_filename, ruhoh_path, rst_filename, draft):
 
     # define paths from category
     category = getCategory(meta)
-    dest_path = composeDestPathFromCategory(ruhoh_path, 'posts', category)
-    path_media = composeDestPathFromCategory(ruhoh_path, 'media', category)
+    dest_path = composeDestPathFromCategory(ruhohPath, 'posts', category)
+    path_media = composeDestPathFromCategory(ruhohPath, 'media', category)
+
     # set draft option
     if draft:
         for m in meta:
@@ -121,7 +126,7 @@ def create_md(html_filename, ruhoh_path, rst_filename, draft):
         else:
             meta.insert(1, "type: draft")
     # source path
-    src_path = os.path.dirname(rst_filename)
+    src_path = os.path.dirname(rstPath)
     # image path correction
     for img in soup.findAll("img"):
         img_path = os.path.join(src_path, img["src"])
@@ -152,7 +157,7 @@ def create_md(html_filename, ruhoh_path, rst_filename, draft):
     if not os.path.exists(dest_path):
         os.mkdir(dest_path)
     # compose md name
-    name, _ = os.path.splitext(os.path.basename(rst_filename))
+    name, _ = os.path.splitext(os.path.basename(rstPath))
     md_filename = os.path.join(dest_path, "%s.md"%name)
     # write results on md_file
     md = open(md_filename, "w")
@@ -177,11 +182,11 @@ def checkParams():
     In case something's wrong, an error missage is issued and 
     finishes execution with an error code.
     When everything is ok, it returns the configuration information
-    in a tuple: rst_filename, ruhoh_path """
+    in a tuple: rstPath, ruhohPath """
     p = argparse.ArgumentParser(description="Converts from rst to ruhoh format", version="1.0")
     p.add_argument('paths', metavar='path', nargs='+', help="Source file path with .rst extension")
     p.add_argument("-d", "--draft", action="store_true", help="Mark converted file as draft", dest="draft")
-    p.add_argument("-r", "--ruhoh_path", action="store", help="Path to ruhoh local copy. Overrides config file specs.", dest="ruhoh_path")
+    p.add_argument("-r", "--ruhohPath", action="store", help="Path to ruhoh local copy. Overrides config file specs.", dest="ruhohPath")
     options = p.parse_args()
     #
     sourcelist = options.paths
@@ -196,27 +201,27 @@ def checkParams():
             print >> sys.stderr, "Error: file not found: %s"%source
             sys.exit(4)
     #
-    if options.ruhoh_path:
-        ruhoh_path = options.ruhoh_path
+    if options.ruhohPath:
+        ruhohPath = options.ruhohPath
     else:
         # check configuration file
         c = ConfigParser()
         try:
             c.read(CONF_FILENAME)
-            ruhoh_path = os.path.expanduser(c.get('RUHOH', 'local_path'))
+            ruhohPath = os.path.expanduser(c.get('RUHOH', 'local_path'))
         except:
             print >> sys.stderr, "Error: %s expected with contents\n"%CONF_FILENAME +\
                     "[RUHOH]\n" +\
                     "local_path = path/to/ruhoh/local/site"
             sys.exit(3)
     #
-    if not os.path.exists(ruhoh_path):
-        print >> sys.stderr, "Error: file not found: %s"%ruhoh_path
+    if not os.path.exists(ruhohPath):
+        print >> sys.stderr, "Error: file not found: %s"%ruhohPath
         sys.exit(5)
     #
     draft = options.draft
     #
-    return sourcelist, ruhoh_path, draft
+    return sourcelist, ruhohPath, draft
 #
 def main():
 
@@ -224,16 +229,16 @@ def main():
     setLocale()
 
     # get configuration information
-    sourcelist, ruhoh_path, draft = checkParams()
+    sourcelist, ruhohPath, draft = checkParams()
 
-    for rst_filename in sourcelist:
+    for rstPath in sourcelist:
         # prepare params for docutils
-        sys.argv = [sys.argv[0], rst_filename]
+        sys.argv = [sys.argv[0], rstPath]
 
         # define html output filename for docutils
         html_file = tempfile.NamedTemporaryFile()
-        html_filename = html_file.name
-        sys.argv.append(html_filename)
+        htmlPath = html_file.name
+        sys.argv.append(htmlPath)
 
         # generate html conversion
         description = ('Generates ruhoh\'s md documents from standalone '
@@ -241,7 +246,7 @@ def main():
         publish_cmdline(writer_name='html', description=description)
 
         # create md for ruhoh
-        create_md(html_filename, ruhoh_path, rst_filename, draft)
+        create_md(htmlPath, ruhohPath, rstPath, draft)
         #
     return 0
 #
