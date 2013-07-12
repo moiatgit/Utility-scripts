@@ -70,6 +70,30 @@ def addMetaIfMissing(meta, tag, val):
     else:
         meta.insert(0, "%s: %s"%(tag, val))
 #
+def getCategory(meta):
+    """ (meta list) -> str 
+    returns the specified category in meta list. If not defined,
+    it returns the empty string """
+    for m in meta:
+        if m.startswith("categories"):
+            category = m.lstrip("categories:").strip()
+            break
+    else:
+        category = ""
+    return category
+#
+def composeDestPathFromCategory(ruhoh_path, contentType, category):
+    """ composes and returns the corresponding post path from the 
+    given category and content type.
+    Content types can be 'posts' or 'media' and define the paths
+    for posts, and other resources (media) """
+    if category == "":
+        path = os.path.join(ruhoh_path, contentType)
+    else:
+        path = os.path.join(ruhoh_path, contentType, category)
+    print "XXX path: ", path
+    return path
+#
 def create_md(html_filename, ruhoh_path, rst_filename, draft):
     """ creates the md file from html.
         If draft, it creates the document with draft option """
@@ -82,25 +106,13 @@ def create_md(html_filename, ruhoh_path, rst_filename, draft):
     if title:
         addMetaIfMissing(meta, 'title', title)
 
-    # set date if not present in meta
-    for m in meta:
-        if m.startswith("date"):
-            m.replace('"', "'")
-            break;
-    else:
-        meta.insert(1, "date: '%s'"%datetime.date.today().strftime("%Y-%m-%d"))
-    #
-    # get post category
-    for m in meta:
-        if m.startswith("categories"):
-            category = m.lstrip("categories:").strip()
-            dest_path = os.path.join(ruhoh_path, "posts", category)
-            path_media = os.path.join(ruhoh_path, "media", category)
-            break
-    else:
-        category = ""
-        dest_path = os.path.join(ruhoh_path, "posts")
-        path_media = os.path.join(ruhoh_path, "media")
+    currentDate = "'%s'"%datetime.date.today().strftime("%Y-%m-%d")
+    addMetaIfMissing(meta, 'date',currentDate)
+
+    # define paths from category
+    category = getCategory(meta)
+    dest_path = composeDestPathFromCategory(ruhoh_path, 'posts', category)
+    path_media = composeDestPathFromCategory(ruhoh_path, 'media', category)
     # set draft option
     if draft:
         for m in meta:
