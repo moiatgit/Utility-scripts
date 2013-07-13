@@ -55,6 +55,7 @@ class RST2RuhohTranslator:
         self.setMetaInfo()
         self.setTitle()
         self.setCategory()
+        self.fixPermalink()
         self.setPostDate()
         self.setDraftOption()
         self.setDestinationPaths()
@@ -139,10 +140,10 @@ class RST2RuhohTranslator:
         getComments = lambda text:isinstance(text, Comment)
         for comment in self.soup.findAll(text=getComments):
             c = str(comment).lstrip("<!--").rstrip("-->").strip()
-            m = re.match("(\w+): (.+)", c)
+            m = re.match("(\w+):(.+)", c)
             if m:  # is a setting
                 metaItem  = m.group(1)
-                metaValue = m.group(2)
+                metaValue = m.group(2).strip()
                 self.meta[metaItem]=metaValue
                 comment.extract()
 
@@ -178,15 +179,21 @@ class RST2RuhohTranslator:
         return result
 
     def setCategory(self):
-        """ sets the post category from meta list """
-        for m in self.meta:
-            if m.startswith("categories"):
-                category = m.lstrip("categories:").strip()
-                break
-        else:
-            category = ""
+        """ sets the post category from meta """
+        self.category = self.meta.get('categories', "")
+        if self.category == "":
             print >> sys.stderr, "WARNING: no category defined in %s"%self.rstPath
-        self.category = category
+
+
+    def fixPermalink(self):
+        """ fixes the post permalink if included at meta.
+        It basicaly includes concrete category and ' when missing """
+        if 'permalink' in self.meta:
+            permalink = self.meta['permalink']
+            permalink = permalink.strip("'")
+            permalink = permalink.lstrip('/:categories/')
+            permalink = permalink.lstrip('/%s/'%self.category)
+            self.meta['permalink'] = "'/%s/%s'"%(self.category, permalink)
 
     def composeDestPathFromCategory(self, contentType):
         """ composes and returns the corresponding post path for the 
