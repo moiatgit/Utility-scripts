@@ -47,18 +47,17 @@ class RST2RuhohTranslator:
         self.ruhohPath = ruhohPath
         self.rstPath   = rstPath
         self.isDraft   = isDraft
+        self.meta      = {} # includes the meta information of the file
 
     def translate(self):
         """ performs the translation from rst to ruhoh format. """
         self.setSoupFromHtml()
         self.setMetaInfo()
-        self.setCategory()
-        self.dest_path  = self.composeDestPathFromCategory('posts')
-        self.path_media = self.composeDestPathFromCategory('media')
-        self.src_path   = os.path.dirname(self.rstPath)
         self.setTitle()
+        self.setCategory()
         self.setPostDate()
         self.setDraftOption()
+        self.setDestinationPaths()
         self.fixResourcePaths()
 
     def saveTranslation(self):
@@ -66,6 +65,11 @@ class RST2RuhohTranslator:
         self.createDestinationPathIfMissing()
         md_filename = self.composeMDFilename()
         self.writeResultsOnFile(md_filename)
+
+    def setDestinationPaths(self):
+        """ keeps paths for the destination of the post and media. """
+        self.dest_path  = self.composeDestPathFromCategory('posts')
+        self.path_media = self.composeDestPathFromCategory('media')
 
     def setTitle(self):
         """ sets the title of the post """
@@ -75,11 +79,7 @@ class RST2RuhohTranslator:
 
     def addMetaIfMissing(self, tag, val):
         """ adds new tag to meta with val if tag was not already there """
-        for m in self.meta:
-            if m.startswith(tag):
-                break
-        else:
-            self.meta.insert(0, "%s: %s"%(tag, val))
+        self.meta[tag] = self.meta.get(tag, val)
 
     def setPostDate(self):
         """ sets current date as post date if no date is expecified """
@@ -90,21 +90,18 @@ class RST2RuhohTranslator:
         """ sets the draft option if isDraft and draft option is not
             already present """
         if self.isDraft:
-            for m in self.meta:
-                if m.startswith("type:"):
-                    break
-            else:
-                self.meta.insert(1, "type: draft")
+            self.addMetaIfMissing('type', 'draft')
 
     def fixResourcePaths(self):
         """ fixes paths of different resources """
-        self.fixImagePaths()
-        self.fixRefPaths()
+        src_path = os.path.dirname(self.rstPath)
+        self.fixImagePaths(src_path)
+        self.fixRefPaths(src_path)
 
-    def fixImagePaths(self):
-        """ fixes paths of images in the post """
+    def fixImagePaths(self, path):
+        """ fixes paths of images in the post from given path"""
         for img in self.soup.findAll("img"):
-            img_path = os.path.join(self.src_path, img["src"])
+            img_path = os.path.join(path, img["src"])
             if os.path.exists(img_path):
                 if not os.path.exists(self.path_media):
                     os.mkdir(self.path_media)
@@ -116,11 +113,11 @@ class RST2RuhohTranslator:
             else:
                 print >> sys.stderr, "WARNING: file %s not found but linked"%img["src"]
 
-    def fixRefPaths(self):
-        """ fixes paths of references to other potts """
+    def fixRefPaths(self, path):
+        """ fixes paths of references to other potts from given path """
         for a in self.soup.findAll("a"):
             if a.has_key("href"):
-                resource_path = os.path.join(self.src_path, a["href"])
+                resource_path = os.path.join(path, a["href"])
                 if os.path.exists(resource_path):
                     if not os.path.exists(self.path_media):
                         os.mkdir(self.path_media)
@@ -130,7 +127,6 @@ class RST2RuhohTranslator:
                     else:
                         a["href"]="{{urls.media}}/%s/%s"%(self.category, a["href"])
 
-
     def setSoupFromHtml(self):
         """ sets soup from the html file """
         html = open(self.htmlPath).read()
@@ -138,16 +134,17 @@ class RST2RuhohTranslator:
         self.soup = soup.body.contents[1]    # cleaned up to body
 
     def setMetaInfo(self):
-        """ get all meta information included in soup and defines meta
-        property with it """
-        meta = []
+        """ processes all meta information included in soup and 
+        includes it in the meta property """
         getComments = lambda text:isinstance(text, Comment)
         for comment in self.soup.findAll(text=getComments):
             c = str(comment).lstrip("<!--").rstrip("-->").strip()
-            if re.match("\w+: .+", c):  # is a setting
-                meta.append(c)
+            m = re.match("(\w+): (.+)", c)
+            if m:  # is a setting
+                metaItem  = m.group(1)
+                metaValue = m.group(2)
+                self.meta[metaItem]=metaValue
                 comment.extract()
-        self.meta = meta
 
     def createDestinationPathIfMissing(self):
         """ create category folder if doesn't exists """
@@ -163,8 +160,8 @@ class RST2RuhohTranslator:
         """ write translation results on md_filename """
         md = open(md_filename, "w")
         md.write("---\n")
-        for m in self.meta:
-            md.write("%s\n"%m)
+        for metaItem, metaVal in self.meta.iteritems():
+            md.write("%s: %s\n"%(metaItem, metaVal))
         md.write("---\n\n")
         md.write(str(self.soup))
         md.close()
@@ -188,7 +185,7 @@ class RST2RuhohTranslator:
                 break
         else:
             category = ""
-            print >> sys.stderr, "WARNING: no category defined in %s"%self.htmlPath
+            print >> sys.stderr, "WARNING: no category defined in %s"%self.rstPath
         self.category = category
 
     def composeDestPathFromCategory(self, contentType):
