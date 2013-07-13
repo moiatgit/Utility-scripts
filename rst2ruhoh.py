@@ -41,132 +41,175 @@ import tempfile
 #
 CONF_FILENAME = os.path.expanduser("~/.rst2ruhoh")  # configuration filename
 #
-def getMetaInfo(soup):
-    """ get all meta information included in soup and returns it in a list """
-    meta = []
-    for comment in soup.findAll(text=lambda text:isinstance(text, Comment)):
-        c = str(comment).lstrip("<!--").rstrip("-->").strip()
-        if re.match("\w+: .+", c):  # is a setting
-            meta.append(c)
-            comment.extract()
-    return meta
-#
-def extractTitle(soup):
-    """ removes title from soup and returns it.
-        It returns empty string when no title is found. """
-    title = soup.find("h1")
-    if title.has_key("class"):
-        result = title.text.encode('utf-8')
-        title.extract()
-    else:
-        result = ''
-    return result
-#
-def addMetaIfMissing(meta, tag, val):
-    """ adds new tag to meta list with val if it is not already there """
-    for m in meta:
-        if m.startswith(tag):
-            break
-    else:
-        meta.insert(0, "%s: %s"%(tag, val))
-#
-def getCategory(meta):
-    """ (meta list) -> str 
-    returns the specified category in meta list. If not defined,
-    it returns the empty string """
-    for m in meta:
-        if m.startswith("categories"):
-            category = m.lstrip("categories:").strip()
-            break
-    else:
-        category = ""
-    return category
-#
-def composeDestPathFromCategory(ruhohPath, contentType, category):
-    """ composes and returns the corresponding post path from the 
-    given category and content type.
-    Content types can be 'posts' or 'media' and define the paths
-    for posts, and other resources (media) """
-    if category == "":
-        path = os.path.join(ruhohPath, contentType)
-    else:
-        path = os.path.join(ruhohPath, contentType, category)
-    return path
-#
-def getSoupFromHtml(htmlPath):
-    """ returns soup from the html file """
-    html = open(htmlPath).read()
-    soup = BeautifulSoup(html)
-    soup = soup.body.contents[1]    # cleaned up to body
-    return soup
+class RST2RuhohTranslator:
+    def __init__(self, htmlPath, ruhohPath, rstPath, isDraft):
+        self.htmlPath  = htmlPath
+        self.ruhohPath = ruhohPath
+        self.rstPath   = rstPath
+        self.isDraft   = isDraft
 
-def create_md(htmlPath, ruhohPath, rstPath, draft):
-    """ creates the md file from html.
-        If draft, it creates the document with draft option """
-    soup = getSoupFromHtml(htmlPath)
-    meta = getMetaInfo(soup)
+    def translate(self):
+        """ performs the translation from rst to ruhoh format. """
+        self.setSoupFromHtml()
+        self.setMetaInfo()
+        self.setCategory()
+        self.dest_path  = self.composeDestPathFromCategory('posts')
+        self.path_media = self.composeDestPathFromCategory('media')
+        self.src_path   = os.path.dirname(self.rstPath)
+        self.setTitle()
+        self.setPostDate()
+        self.setDraftOption()
+        self.fixResourcePaths()
 
-    title = extractTitle(soup) # remove title
-    if title:
-        addMetaIfMissing(meta, 'title', title)
+    def saveTranslation(self):
+        """ saves the translation in the corresponding destination """
+        self.createDestinationPathIfMissing()
+        md_filename = self.composeMDFilename()
+        self.writeResultsOnFile(md_filename)
 
-    currentDate = "'%s'"%datetime.date.today().strftime("%Y-%m-%d")
-    addMetaIfMissing(meta, 'date',currentDate)
+    def setTitle(self):
+        """ sets the title of the post """
+        title = self.extractTitle()
+        if title:
+            self.addMetaIfMissing('title', title)
 
-    # define paths from category
-    category = getCategory(meta)
-    dest_path = composeDestPathFromCategory(ruhohPath, 'posts', category)
-    path_media = composeDestPathFromCategory(ruhohPath, 'media', category)
-
-    # set draft option
-    if draft:
-        for m in meta:
-            if m.startswith("type:"):
+    def addMetaIfMissing(self, tag, val):
+        """ adds new tag to meta with val if tag was not already there """
+        for m in self.meta:
+            if m.startswith(tag):
                 break
         else:
-            meta.insert(1, "type: draft")
-    # source path
-    src_path = os.path.dirname(rstPath)
-    # image path correction
-    for img in soup.findAll("img"):
-        img_path = os.path.join(src_path, img["src"])
-        if os.path.exists(img_path):
-            if not os.path.exists(path_media):
-                os.mkdir(path_media)
-            shutil.copy(img_path, path_media)
-            if category == "":
-                img["src"]="{{urls.media}}/%s"%img["src"]
+            self.meta.insert(0, "%s: %s"%(tag, val))
+
+    def setPostDate(self):
+        """ sets current date as post date if no date is expecified """
+        currentDate = "'%s'"%datetime.date.today().strftime("%Y-%m-%d")
+        self.addMetaIfMissing('date',currentDate)
+
+    def setDraftOption(self):
+        """ sets the draft option if isDraft and draft option is not
+            already present """
+        if self.isDraft:
+            for m in self.meta:
+                if m.startswith("type:"):
+                    break
             else:
-                img["src"]="{{urls.media}}/%s/%s"%(category, img["src"])
-        else:
-            print >> sys.stderr, "WARNING: file %s not found but linked"%img["src"]
-        #
-    # other resources correction
-    for a in soup.findAll("a"):
-        if a.has_key("href"):
-            resource_path = os.path.join(src_path, a["href"])
-            if os.path.exists(resource_path):
-                if not os.path.exists(path_media):
-                    os.mkdir(path_media)
-                shutil.copy(resource_path, path_media)
-                if category == "":
-                    a["href"]="{{urls.media}}/%s"%a["href"]
+                self.meta.insert(1, "type: draft")
+
+    def fixResourcePaths(self):
+        """ fixes paths of different resources """
+        self.fixImagePaths()
+        self.fixRefPaths()
+
+    def fixImagePaths(self):
+        """ fixes paths of images in the post """
+        for img in self.soup.findAll("img"):
+            img_path = os.path.join(self.src_path, img["src"])
+            if os.path.exists(img_path):
+                if not os.path.exists(self.path_media):
+                    os.mkdir(self.path_media)
+                shutil.copy(img_path, self.path_media)
+                if self.category == "":
+                    img["src"]="{{urls.media}}/%s"%img["src"]
                 else:
-                    a["href"]="{{urls.media}}/%s/%s"%(category, a["href"])
-    # create category folder if doesn't exists
-    if not os.path.exists(dest_path):
-        os.mkdir(dest_path)
-    # compose md name
-    name, _ = os.path.splitext(os.path.basename(rstPath))
-    md_filename = os.path.join(dest_path, "%s.md"%name)
-    # write results on md_file
-    md = open(md_filename, "w")
-    md.write("---\n")
-    for m in meta:
-        md.write("%s\n"%m)
-    md.write("---\n\n")
-    md.write(str(soup))
-    md.close()
+                    img["src"]="{{urls.media}}/%s/%s"%(self.category, img["src"])
+            else:
+                print >> sys.stderr, "WARNING: file %s not found but linked"%img["src"]
+
+    def fixRefPaths(self):
+        """ fixes paths of references to other potts """
+        for a in self.soup.findAll("a"):
+            if a.has_key("href"):
+                resource_path = os.path.join(self.src_path, a["href"])
+                if os.path.exists(resource_path):
+                    if not os.path.exists(self.path_media):
+                        os.mkdir(self.path_media)
+                    shutil.copy(resource_path, self.path_media)
+                    if self.category == "":
+                        a["href"]="{{urls.media}}/%s"%a["href"]
+                    else:
+                        a["href"]="{{urls.media}}/%s/%s"%(self.category, a["href"])
+
+
+    def setSoupFromHtml(self):
+        """ sets soup from the html file """
+        html = open(self.htmlPath).read()
+        soup = BeautifulSoup(html)
+        self.soup = soup.body.contents[1]    # cleaned up to body
+
+    def setMetaInfo(self):
+        """ get all meta information included in soup and defines meta
+        property with it """
+        meta = []
+        getComments = lambda text:isinstance(text, Comment)
+        for comment in self.soup.findAll(text=getComments):
+            c = str(comment).lstrip("<!--").rstrip("-->").strip()
+            if re.match("\w+: .+", c):  # is a setting
+                meta.append(c)
+                comment.extract()
+        self.meta = meta
+
+    def createDestinationPathIfMissing(self):
+        """ create category folder if doesn't exists """
+        if not os.path.exists(self.dest_path):
+            os.mkdir(dest_path)
+
+    def composeMDFilename(self):
+        """ composes the name of the markdown file """
+        name, _ = os.path.splitext(os.path.basename(self.rstPath))
+        return os.path.join(self.dest_path, "%s.md"%name)
+
+    def writeResultsOnFile(self, md_filename):
+        """ write translation results on md_filename """
+        md = open(md_filename, "w")
+        md.write("---\n")
+        for m in self.meta:
+            md.write("%s\n"%m)
+        md.write("---\n\n")
+        md.write(str(self.soup))
+        md.close()
+
+    def extractTitle(self):
+        """ removes title from soup and returns it.
+            It returns empty string when no title is found. """
+        title = self.soup.find("h1")
+        if title.has_key("class"):
+            result = title.text.encode('utf-8')
+            title.extract()
+        else:
+            result = ''
+        return result
+
+    def setCategory(self):
+        """ sets the post category from meta list """
+        for m in self.meta:
+            if m.startswith("categories"):
+                category = m.lstrip("categories:").strip()
+                break
+        else:
+            category = ""
+            print >> sys.stderr, "WARNING: no category defined in %s"%self.htmlPath
+        self.category = category
+
+    def composeDestPathFromCategory(self, contentType):
+        """ composes and returns the corresponding post path for the 
+        given content type.
+        Content types can be 'posts' or 'media' and define the paths
+        for posts, and other resources (media) """
+        if self.category == "":
+            path = os.path.join(self.ruhohPath, contentType)
+        else:
+            path = os.path.join(self.ruhohPath, contentType, self.category)
+        return path
+
+####
+
+#
+#
+#
+#
+#
+#
 #
 def setLocale():
     """ tries to set locale """
@@ -219,9 +262,9 @@ def checkParams():
         print >> sys.stderr, "Error: file not found: %s"%ruhohPath
         sys.exit(5)
     #
-    draft = options.draft
+    isDraft = options.draft
     #
-    return sourcelist, ruhohPath, draft
+    return sourcelist, ruhohPath, isDraft
 #
 def main():
 
@@ -229,7 +272,7 @@ def main():
     setLocale()
 
     # get configuration information
-    sourcelist, ruhohPath, draft = checkParams()
+    sourcelist, ruhohPath, isDraft = checkParams()
 
     for rstPath in sourcelist:
         # prepare params for docutils
@@ -246,7 +289,9 @@ def main():
         publish_cmdline(writer_name='html', description=description)
 
         # create md for ruhoh
-        create_md(htmlPath, ruhohPath, rstPath, draft)
+        translator = RST2RuhohTranslator(htmlPath, ruhohPath, rstPath, isDraft)
+        translator.translate()
+        translator.saveTranslation()
         #
     return 0
 #
