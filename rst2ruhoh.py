@@ -7,14 +7,12 @@
 
 # required: docutils
 
-# TODO: when referencing local documents from other documents there's
-# a mismatch between urls: rst files should reference to other rst
-# files but ruhoh requires {{url}}/category/title as href. To solve
-# it, it is necessary a not-so-hard change: 
-#  check whether the link hrefs to a local .rst file
-#  then extract from the referenced file the title and the category
-#  then replace the link to {{url}}/categories/title.
-
+# TODO: current version allows references to rst by simpy href to the
+# corresponding .rst file.
+# However it is limited to references in the same category (folder).
+# References to files at other categories are possible by using the
+# ruhoh notation: '{{url}}/category/permalink'.
+# It should be possible to accept '../category/rstfile' notation.
 # In the meantime, a simple workaround is hardcoding ruhoh's expected
 # href in the rst file.
 
@@ -38,6 +36,7 @@ from docutils.core import publish_cmdline, default_description
 from ConfigParser import ConfigParser
 import argparse
 import tempfile
+import urllib, urlparse
 #
 CONF_FILENAME = os.path.expanduser("~/.rst2ruhoh")  # configuration filename
 #
@@ -64,7 +63,7 @@ class RST2RuhohTranslator:
     def saveTranslation(self):
         """ saves the translation in the corresponding destination """
         self.createDestinationPathIfMissing()
-        md_filename = self.composeMDFilename()
+        md_filename = self.composeMDFilename(self.dest_path, self.rstPath)
         self.writeResultsOnFile(md_filename)
 
     def setDestinationPaths(self):
@@ -75,8 +74,9 @@ class RST2RuhohTranslator:
     def setTitle(self):
         """ sets the title of the post """
         title = self.extractTitle()
-        if title:
-            self.addMetaIfMissing('title', title)
+        if not title:
+            title = 'untitled'
+        self.addMetaIfMissing('title', title)
 
     def addMetaIfMissing(self, tag, val):
         """ adds new tag to meta with val if tag was not already there """
@@ -119,7 +119,9 @@ class RST2RuhohTranslator:
         for a in self.soup.findAll("a"):
             if a.has_key("href"):
                 resource_path = os.path.join(path, a["href"])
-                if os.path.exists(resource_path):
+                if resource_path.endswith('.rst'):
+                    a['href']=self.fixRSTLink(resource_path)
+                elif os.path.exists(resource_path):
                     if not os.path.exists(self.path_media):
                         os.mkdir(self.path_media)
                     shutil.copy(resource_path, self.path_media)
@@ -127,6 +129,28 @@ class RST2RuhohTranslator:
                         a["href"]="{{urls.media}}/%s"%a["href"]
                     else:
                         a["href"]="{{urls.media}}/%s/%s"%(self.category, a["href"])
+
+    def fixRSTLink(self, rstlink):
+        """ fixes anchor of a link to a rst file that might
+        be or not already translated.
+        It returns the fixed href value """
+        href = rstlink
+        mdlink = self.composeMDFilename(self.dest_path, rstlink)
+        if not os.path.exists(rstlink):
+            print >> sys.stderr, "WARNING: missing linked file %s"%rstlink
+        if not os.path.exists(mdlink):
+            print >> sys.stderr, "WARNING: missing linked file %s"%mdlink
+            return "#"
+        fd = open(mdlink)
+        for lin in fd:
+            m = re.match("^permalink: '(.*)'", lin)
+            if m:
+                linkedPermalink = m.group(1).strip()
+                break
+        else:
+            print >> sys.stderr, "WARNING: missing permalink tag in linked file %s"%mdlink
+            return "#"
+        return linkedPermalink
 
     def setSoupFromHtml(self):
         """ sets soup from the html file """
@@ -152,10 +176,12 @@ class RST2RuhohTranslator:
         if not os.path.exists(self.dest_path):
             os.mkdir(dest_path)
 
-    def composeMDFilename(self):
-        """ composes the name of the markdown file """
-        name, _ = os.path.splitext(os.path.basename(self.rstPath))
-        return os.path.join(self.dest_path, "%s.md"%name)
+    @staticmethod
+    def composeMDFilename(md_path, rstFilename):
+        """ composes the name of the markdown file from the rst file
+        name"""
+        name, _ = os.path.splitext(os.path.basename(rstFilename))
+        return os.path.join(md_path, "%s.md"%name)
 
     def writeResultsOnFile(self, md_filename):
         """ write translation results on md_filename """
@@ -179,21 +205,38 @@ class RST2RuhohTranslator:
         return result
 
     def setCategory(self):
-        """ sets the post category from meta """
-        self.category = self.meta.get('categories', "")
-        if self.category == "":
-            print >> sys.stderr, "WARNING: no category defined in %s"%self.rstPath
-
+        """ sets the post category from meta.
+            If categories is not present in meta, this function
+            sets the parent directory name of the rst file as 
+            the name of the category."""
+        category = self.meta.get('categories', "")
+        if category == "":
+            rstPath = os.path.dirname(self.rstPath)
+            rstPath = '.' if rstPath == '' else rstPath
+            category = os.path.basename(os.path.realpath(rstPath))
+            self.meta['categories'] = category
+        self.category = category
 
     def fixPermalink(self):
-        """ fixes the post permalink if included at meta.
-        It basicaly includes concrete category and ' when missing """
+        """ fixes the post permalink.
+        When permalink is already specified at meta, this function
+        includes concrete category and ' when missing.
+        When it is not already included, it is composed from title. """
         if 'permalink' in self.meta:
             permalink = self.meta['permalink']
             permalink = permalink.strip("'")
-            permalink = permalink.lstrip('/:categories/')
-            permalink = permalink.lstrip('/%s/'%self.category)
-            self.meta['permalink'] = "'/%s/%s'"%(self.category, permalink)
+            for s in ['/:categories/', '/%s/'%self.category]:
+                if permalink.startswith(s):
+                    permalink=permalink[len(s):]
+        else:
+            title = self.meta.get('title', 'untitled')
+            permalink = self.composePermalinkFromTitle(title)
+        self.meta['permalink'] = "'/%s/%s'"%(self.category, permalink)
+
+    @staticmethod
+    def composePermalinkFromTitle(title):
+        """ composes a permalink from the title """
+        return url_fix(title)
 
     def composeDestPathFromCategory(self, contentType):
         """ composes and returns the corresponding post path for the 
@@ -208,13 +251,28 @@ class RST2RuhohTranslator:
 
 ####
 
-#
-#
-#
-#
-#
-#
-#
+
+def url_fix(s, charset='utf-8'):
+    """Sometimes you get an URL by a user that just isn't a real
+    URL because it contains unsafe characters like ' ' and so on.  This
+    function can fix some of the problems in a similar way browsers
+    handle data entered by the user
+
+    Found at https://github.com/mitsuhiko/werkzeug/blob/master/werkzeug/urls.py
+
+    >>> url_fix(u'http://de.wikipedia.org/wiki/Elf (Begriffsklärung)')
+    'http://de.wikipedia.org/wiki/Elf%20%28Begriffskl%C3%A4rung%29'
+
+    :param charset: The target charset for the URL if the url was
+                    given as unicode string.
+    """
+    if isinstance(s, unicode):
+        s = s.encode(charset, 'ignore')
+    scheme, netloc, path, qs, anchor = urlparse.urlsplit(s)
+    path = urllib.quote(path, '/%')
+    qs = urllib.quote_plus(qs, ':&=')
+    return urlparse.urlunsplit((scheme, netloc, path, qs, anchor))
+
 def setLocale():
     """ tries to set locale """
     try:
@@ -222,7 +280,7 @@ def setLocale():
         locale.setlocale(locale.LC_ALL, '')
     except:
         pass
-#
+
 def checkParams():
     """ checks that the arguments of the program call, and the
     configuration file are as expected. 
@@ -269,7 +327,7 @@ def checkParams():
     isDraft = options.draft
     #
     return sourcelist, ruhohPath, isDraft
-#
+
 def main():
 
     # try to set locale
