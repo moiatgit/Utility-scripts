@@ -72,9 +72,9 @@ class RST2RuhohTranslator:
         self.rstPath   = os.path.realpath(rstPath)
         self.isDraft   = isDraft
         self.meta      = {} # includes the meta information of the file
-        self.collection = os.path.basename(self.rstPath)
+        self.collection = RST2RuhohTranslator.getCollectionFromPath(self.rstPath)
         self.dest_path = RST2RuhohTranslator.composePostDestinationPath(self.ruhohPath)
-        self.path_media = RST2RuhohTranslator.composePostDestinationPath(self.ruhohPath)
+        self.path_media = RST2RuhohTranslator.composeMediaDestinationPath(self.ruhohPath)
 
     def translate(self):
         """ performs the translation from rst to ruhoh format. """
@@ -99,14 +99,15 @@ class RST2RuhohTranslator:
 
         composes and returns the destination path of the post
         """
-        return os.path.join(ruhohPath, 'post')
+        return os.path.join(ruhohPath, 'posts')
 
+    @staticmethod
     def composeMediaDestinationPath(ruhohPath):
         """ (str) -> str
 
         composes and returns the destination path of the media
         """
-        return os.path.join(self.ruhohPath, 'media')
+        return os.path.join(ruhohPath, 'media')
 
     def setTitle(self):
         """ (RST2RuhohTranslator) -> NoneType
@@ -220,11 +221,9 @@ class RST2RuhohTranslator:
         """
         filename = os.path.basename(fileref)
         collection = RST2RuhohTranslator.getCollectionFromPath(fileref)
-        mdPath = RST2RuhohTranslator.composeMDFilename(self.dest_path, collection, filename)
-        XXX vas per aquí: ara has de treure el titol del md si existeix.
-        Ja està implementada la funció!
-        després assegura't que neteges una mica el codi: hi ha funcions que ja no calen
-        return "XXXunknown"
+        mdpath = RST2RuhohTranslator.composeMDFilename(self.dest_path, collection, filename)
+        permalink = RST2RuhohTranslator.extractPermalinkFromMD(mdpath)
+        return permalink
 
     @staticmethod
     def getCollectionFromPath(path):
@@ -234,7 +233,8 @@ class RST2RuhohTranslator:
         >>> RST2RuhohTranslator.getCollectionFromPath('../colname/filename')
         colname
         """
-        return os.path.basename(os.path.dirname(path))
+        collection = os.path.basename(os.path.dirname(path))
+        return collection
 
     @staticmethod
     def isExternalResource(resource):
@@ -259,33 +259,6 @@ class RST2RuhohTranslator:
             return "{{urls.media}}/%s"%href
         else:
             return "{{urls.media}}/%s/%s"%(self.collection, href)
-
-    def fixRSTLink(self, rstlink):
-        """ fixes anchor of a link to a rst file that might
-        be or not already translated.
-        It returns the fixed href value or, in case of error, '#' """
-        if not os.path.exists(rstlink):
-            print >> sys.stderr, "WARNING: missing linked file %s"%rstlink
-        if '/' in rstlink:  # it includes path information
-            collection = RST2RuhohTranslator.getCollectionFromPath(rstlink)
-            rstname  = os.path.basename(rstlink)
-            categorizedlink = os.path.join(collection, rstname)
-            path = os.path.join(self.ruhohPath, 'posts', collection)
-            mdlink = RST2RuhohTranslator.composeMDFilename(path, collection, rstname)
-        else:
-            collection = self.collection
-            mdlink = RST2RuhohTranslator.composeMDFilename(self.dest_path, collection, rstlink)
-        if not os.path.exists(mdlink):
-            print >> sys.stderr, "WARNING: missing linked file %s"%mdlink
-            return "#"
-        linkedPermalink = self.extractPermalinkFromMD(mdlink)
-        if linkedPermalink == "":
-            linkedPermalink = "#"
-            print >> sys.stderr, "WARNING: missing permalink tag in linked file %s"%mdlink
-        else:
-            name = RST2RuhohTranslator.getPermalinkName(linkedPermalink)
-            linkedPermalink = self.composePermalinkFromCollectionAndName(collection, name)
-        return linkedPermalink
 
     def setSoupFromHtml(self):
         """ sets soup from the html file """
@@ -327,22 +300,27 @@ class RST2RuhohTranslator:
         composes the name of the markdown file from the base path,
         the collection and the rst file name"""
         name, _ = os.path.splitext(os.path.basename(rstFilename))
-        return os.path.join(basePath, collection, "%s.md"%name)
+        mdpath = os.path.join(basePath, collection, "%s.md"%name)
+        return mdpath
 
     @staticmethod
     def extractPermalinkFromMD(mdpath):
         """ extracts and returns permalink information from the
-        given md path. It returns empty string when permalink info
-        is not present. """
-        fd = open(mdpath)
-        for lin in fd:
-            m = re.match("^permalink: '(.*)'", lin)
-            if m:
-                permalink = m.group(1).strip()
-                break
+        given md path. It returns '#' string when md file doesn't
+        exists or permalink info is not present. """
+        permalink = "#"
+        if os.path.exists(mdpath):
+            fd = open(mdpath)
+            for lin in fd:
+                m = re.match("^permalink: '(.*)'", lin)
+                if m:
+                    permalink = m.group(1).strip()
+                    break
+            else:
+                print >> sys.stderr, "WARNING: file %s contains no permalink information"%mdpath
+            fd.close()
         else:
-            permalink = ""
-        fd.close()
+            print >> sys.stderr, "WARNING: file %s not found but expected"%mdpath
         return permalink
 
     def writeResultsOnFile(self, md_filename):
