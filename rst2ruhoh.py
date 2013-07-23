@@ -30,6 +30,15 @@
 #   }
 #   complete -o default -o nospace -F _rst2ruhoh  rst2ruhoh.py
 
+# TODO:
+# - current RST2RuhohTranslator class is pretty silly. Main methods'
+#   responsibilities are assigned almost randomly
+# - current testing is way too manual, althoug there're an small
+#   number of functions displaying some sort of doctest, there's a lot
+#   of room for improvement here. I'm positive that current code
+#   coverage is too low
+# - naming is poor. Too much different conventions applied
+
 #
 import os, shutil, sys, re, datetime
 from BeautifulSoup import BeautifulSoup, Comment
@@ -60,7 +69,6 @@ _SPECIAL_CHAR = {   # map for special character conversion
         }
 #
 class RST2RuhohTranslator:
-
 
     def __init__(self, htmlPath, ruhohPath, rstPath, isDraft):
         self.htmlPath  = htmlPath
