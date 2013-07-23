@@ -64,6 +64,8 @@ _SPECIAL_CHAR = {   # map for special character conversion
         ord(u'ü'):u'u',
         ord(u'ç'):u's',
         ord(u'ñ'):u'ny',
+        ord(u'('):u'_',
+        ord(u')'):None,
         ord(u'·'):None,
         ord(u' '):None
         }
@@ -154,18 +156,22 @@ class RST2RuhohTranslator:
 
     def fixHRefPath(self, path, href):
         """ fixes href in the following way:
-            1. if href points to an rst file, it tries to convert
+            1. if href is internal, no modifications
+            2. if href points to an rst file, it tries to convert
             the link to its corresponding md file.
-            2. if href points to an existing file, it copies the file
+            3. if href points to an existing file, it copies the file
             to the {{urls.media}}/:collection/ folder and fixes
             consequently the path. Attention: in case the resource
             already exists it will be overriden without considering if
             they are differents nor if there are other md pointing at it.
-            3. if href points to a non existing file within the
+            4. if href points to a non existing file within the
             filesystem, it issues a warning.
-            4. if href points to an external file (e.g. http://) it
+            5. if href points to an external file (e.g. http://) it
             keeps the link without changes.
         """
+        if href.startswith("#"):
+            return href
+
         if isExternalResource(href):
             return href
 
