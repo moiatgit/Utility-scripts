@@ -95,7 +95,8 @@ class RST2RuhohTranslator:
 
     def saveTranslation(self):
         """ saves the translation in the corresponding destination """
-        self.createDestinationPathIfMissing()
+        destdir = os.path.join(self.dest_path, self.collection)
+        createPathIfMissing(destdir)
         md_filename = composeMDFilename(self.dest_path, self.collection, self.rstPath)
         self.writeResultsOnFile(md_filename)
 
@@ -139,10 +140,9 @@ class RST2RuhohTranslator:
             if os.path.exists(img_path):
                 name = os.path.basename(img_path)
                 collection = getCollectionFromPath(img_path)
-                dirdest = os.path.join(self.path_media, collection)
-                if not os.path.exists(dirdest):
-                    os.mkdir(dirdest)
-                imgdest = os.path.join(dirdest, name)
+                destdir = os.path.join(self.path_media, collection)
+                createPathIfMissing(destdir)
+                imgdest = os.path.join(destdir, name)
                 shutil.copy(img_path, imgdest)
                 img["src"]="{{urls.media}}/%s/%s"%(collection, name)
             else:
@@ -204,10 +204,9 @@ class RST2RuhohTranslator:
         """ fixes the path of an existing resource and returns it """
         name = os.path.basename(fileref)
         collection = getCollectionFromPath(fileref)
-        dirdest = os.path.join(self.path_media, collection)
-        if not os.path.exists(dirdest):
-            os.mkdir(dirdest)
-        filedest = os.path.join(dirdest, name)
+        destdir = os.path.join(self.path_media, collection)
+        createPathIfMissing(destdir)
+        filedest = os.path.join(destdir, name)
         shutil.copy(fileref, filedest)
         url = "{{urls.media}}/%s/%s"%(collection, name)
         return url
@@ -228,11 +227,6 @@ class RST2RuhohTranslator:
                 metaValue = m.group(2).strip()
                 self.meta[metaItem]=metaValue
                 comment.extract()
-
-    def createDestinationPathIfMissing(self):
-        """ create collection folder if doesn't exists """
-        if not os.path.exists(self.dest_path):
-            os.mkdir(self.dest_path)
 
     def writeResultsOnFile(self, md_filename):
         """ write translation results on md_filename """
@@ -284,6 +278,11 @@ class RST2RuhohTranslator:
         self.meta['permalink'] = permalink
 
 ####
+
+def createPathIfMissing(path):
+    """ create a directory if it doesn't already exists """
+    if not os.path.exists(path):
+        os.mkdir(path)
 
 def getContentSoupFromFile(path):
     """ (str) -> BeautifulSoup
