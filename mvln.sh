@@ -20,8 +20,8 @@ then
     exit 3
 fi
 
-sfname=$(basename $1)
-dfpath=${2%/}/$sfname
+sfname=$(basename "$1")
+dfpath="${2%/}/$sfname"
 
 if [ -f $dfpath ];
 then
