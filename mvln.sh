@@ -32,7 +32,7 @@ fi
 echo "Operations to perform:"
 echo "$ mv $1 $dfpath"
 echo "$ ln -s $dfpath $1"
-read -p "Proceed? [Yn] " -n 1 -r
+read -p "Proceed? [yN] " -n 1 -r
 if [[ $REPLY =~ ^[YySs]$ ]]
 then
     mv "$1" "$dfpath"
