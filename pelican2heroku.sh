@@ -18,6 +18,14 @@
 #    PUBLISHCONF        file name of the pelican configuration file
 #                       for publishing
 #
+
+# TODO: Current implementation does not have into account whether the
+# files in HEROKUDIR have been actually pushed onto heroku. For that
+# reason it is possible to cancel pushing while having commited last
+# changes. Further calls to this script (without changes on contents)
+# will not be pushed since there will not be any change on git rep.
+# You might want to include a certain file flag (git unmanaged) that
+# is created after actual commit and removed just when actual push
 #
 
 P2HCONFIG=~/.pelican2heroku
@@ -44,6 +52,7 @@ else
     echo "Remember: include $PUBLISHOPT option to send it to heroku"
 fi
 #
+# elements to preserve on HEROKUDIR in "find" notation
 CLEANEXCEPTIONS="( -not -name index.php -and -not -name .htaccess -and -not -wholename */.git* )"
 #
 
@@ -53,6 +62,7 @@ echo "$OUTPUTDIR is now clean"
 #
 
 # convert contents
+cd $PELICANDIR
 pelican -o $OUTPUTDIR -s $CONFFILE $PELICANOPTS $INPUTDIR 
 
 # cleaning up previous contents on heroku's dir
