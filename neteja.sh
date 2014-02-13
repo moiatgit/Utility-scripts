@@ -1,4 +1,4 @@
-find ~/.thumbnails/normal/  -type f -exec rm -v '{}' \;
-find ~/.thumbnails/large/  -type f -exec rm -v '{}' \;
-find ~/.thumbnails/fail/gnome-thumbnail-factory/  -type f -exec rm -v '{}' \;
+echo "Cleaning temporary files"
+find ~/.thumbnails/  -type f -exec rm -v '{}' \;
 python ~/bin/netejarecent.py -a
+echo "Cleaning done!"
