@@ -16,7 +16,7 @@ fi
 source $PCCONFIG
 
 # check for correct parameter number
-if [[ "$#" < 2 ]]
+if [ $# -lt 2 ]
 then
     echo "ERROR: specify a command (add/rm) and at least one file"
     exit 1
