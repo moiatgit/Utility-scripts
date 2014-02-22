@@ -1,7 +1,7 @@
 #! /bin/bash
 
 echo "Use this script to launch the mongod server"
-echo "press a key to continue <ctrl>-c to cancel"
+echo "press enter to continue <ctrl>-c to cancel"
 read resposta
 
 a="$(pidof mongod)"

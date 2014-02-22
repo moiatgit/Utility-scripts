@@ -28,6 +28,7 @@
 # is created after actual commit and removed just when actual push
 #
 
+
 P2HCONFIG=~/.pelican2heroku
 PUBLISHOPT="--publish"
 #
@@ -41,6 +42,8 @@ fi
 # load configuration vars
 source $P2HCONFIG
 
+echo "Removing broken links on $INPUTDIR"
+find -L $INPUTDIR -type l -exec rm -v {} +
 #
 if [[ "$*" == *$PUBLISHOPT* ]]
 then
