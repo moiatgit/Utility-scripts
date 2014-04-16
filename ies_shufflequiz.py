@@ -164,7 +164,8 @@ def split_resposta(linia):
         en cas de barreja """
     res = None
     if linia.startswith(".. resposta:"):
-        if linia.rstrip()[-1:] == 'f':
+        #if linia.rstrip()[-1:] == 'f':
+        if linia.rstrip().endswith('f'):
             final = True
             pes = linia.rstrip()[-2:-1]
         else:
@@ -219,6 +220,7 @@ def processa_continguts(f):
         elif estat == "resposta":
             if lin.startswith(".. pregunta:"):  # s'han acabat les respostes
                 respostes.append((resposta, pes, final))
+
                 if len(respostes)>MAX_RESPOSTES:
                     print >> sys.stderr, "WARNING: més de %s respostes!"%MAX_RESPOSTES
                 preguntes.append(Pregunta(titol, enunciat, respostes))
@@ -231,17 +233,19 @@ def processa_continguts(f):
             else:
                 es_resposta = split_resposta(lin)
                 if es_resposta <> None:     # s'ha llegit una altra resposta
-                    noupes, final = es_resposta
+                    noupes, noufinal = es_resposta
                     respostes.append((resposta, pes, final))
                     if len(respostes)>=MAX_RESPOSTES:
                         print >> sys.stderr, "WARNING: més de %s respostes!"%MAX_RESPOSTES
                     resposta = ""
                     pes = noupes
+                    final = noufinal
                 else:
                     resposta += lin
     if estat in ("resposta", "enunciat"): # cal guardar la darrera pregunta
         if estat == "resposta":
             respostes.append((resposta, pes, final))
+
         if len(respostes)>MAX_RESPOSTES:
             print >> sys.stderr, "WARNING: més de %s respostes!"%MAX_RESPOSTES
         preguntes.append(Pregunta(titol, enunciat, respostes))
@@ -293,7 +297,7 @@ def valida_parametres():
 
     numver=1
 
-    fitxer = sys.argv[1]
+    fitxer = sys.argv[2]
     base, ext = os.path.splitext(fitxer)
     if ext <> ".quiz":
         print >> sys.stderr, "Error: %s no és un fitxer .quiz"%fitxer
