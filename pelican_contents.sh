@@ -18,7 +18,7 @@ source $PCCONFIG
 # check for correct parameter number
 if [ $# -lt 2 ]
 then
-    echo "ERROR: specify a command (add/rm) and at least one file"
+    echo "ERROR: specify a command (add/rm/rmf) and at least one file"
     exit 1
 fi
 
@@ -29,8 +29,11 @@ then
 elif [[ "$1" == "rm" ]]
 then
     action="RM"
+elif [[ "$1" == "rmf" ]]
+then
+    action="RMF"
 else
-    echo "ERROR: available options add and rm"
+    echo "ERROR: available options are: add, rm and rmf"
     exit 1
 fi
 
@@ -57,6 +60,9 @@ do
         if [ -f "$link" -a $action = "RM" ]
         then
             echo `rm -vi "$link"`
+        elif [ -f "$link" -a $action = "RMF" ]
+        then
+            echo `rm -v "$link"`
         elif [ ! -f "$link" -a $action = "ADD" ]
         then
             echo `ln -s "$filename" "$link" && ls "$link"`
