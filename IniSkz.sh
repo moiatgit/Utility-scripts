@@ -13,10 +13,14 @@ source ~/.Skz
 # The following function initializes a repository with git and the
 # required remotes
 initialize() {
-    echo "Creating repository $1"
-    if [ ! -d $1 ];
+    if [ ! -d "$1" ];
     then
+        echo "Creating folder $1"
         mkdir -p "$1"
+    fi
+    if [ ! -d "$1/.git" ];
+    then
+        echo "Creating repository $1"
         cd "$1"
         git init
         echo "This repo has been automaticaly created by $0" > README
