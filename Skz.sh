@@ -31,17 +31,35 @@ else
     COMMIT_COMMENT="$1"
 fi
 
-echo $COMMIT_COMMENT
+TMPFILE="/tmp/`date`.$RANDOM"
 #
 commit () {
     # commits on path $1 if exists
     # it recursively adds all the possible changes to the repository
     if [ -d $1 ];
     then
-        echo "··· Commit on $1"
         cd $1
         find . -type d | grep -v "\.\w" | sed "s/\(.*\)/\"\1\"/g" | xargs git add -A
-        git commit -am "$COMMIT_COMMENT"
+
+        if [[ ! -n $(git commit -am "$COMMIT_COMMENT" | tee "$TMPFILE" | grep "nothing to commit (working directory clean)") ]];
+        then
+            echo "··· Commit on $1"
+            cat "$TMPFILE"
+        else
+            echo "... Commit on $1: no changes"
+        fi
+    fi
+}
+
+pull () {
+    # pulls from $1 directory with name $2 to $3
+    cd "$1"
+    if [[ ! -n $(git pull "$2" master | tee "$TMPFILE" | grep "Already up-to-date.") ]];
+    then
+        echo "··· Pulling from $2 to $3"
+        cat "$TMPFILE"
+    else
+        echo "... Pulling from $2 to $3: no changes"
     fi
 }
 #
@@ -76,13 +94,15 @@ do
                     rep_name=${rep_name:2}  # extract -- from repository name
                 else
                     commit $pen_path
-                    cd $LOCAL
-                    echo "··· Pulling from $rep_name to $LOCAL_NAME"
-                    git pull $rep_name master
+                    pull "$LOCAL" "$rep_name" "$LOCAL_NAME"
+                    #cd $LOCAL
+                    #echo "··· Pulling from $rep_name to $LOCAL_NAME"
+                    #git pull $rep_name master
                 fi
-                cd $pen_path
-                echo "··· Pulling from $LOCAL_NAME to $rep_name"
-                git pull $LOCAL_NAME master
+                pull "$pen_path" "$LOCAL_NAME" "$rep_name"
+                #cd $pen_path
+                #echo "··· Pulling from $LOCAL_NAME to $rep_name"
+                #git pull $LOCAL_NAME master
             fi
             let "i++"
         done
