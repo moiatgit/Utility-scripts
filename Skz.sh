@@ -7,18 +7,19 @@
 # changes in destination repository
 #
 # It accepts one or more pendrives and jbk
+# It accepts one or more repositories. By now all them must be stored
+# at the same base dir.
 #
 # ~/.Skz should contain configuration in the following format:
-#    LOCAL="«path to local rep"
-#    PEN=("«path to one pendrive»" "«path to another pendrive»")
+#    LOCAL_BASE="«path to local base of repositories"
+#    PEN_BASE=("«path to one pendrive's base»" "«path to another pendrive's #    base»")
 #    LOCAL_NAME=«host name rep»
 #    PEN_NAME=("«pen1 name rep»" "«pen2 name rep»")
+#    REPOS=("«path to repo1»" "«path to repo 2»")
 # When pen name repository starts with -- Skz treats as JBK and no commit is
 # performed on this repository.
 #
-# TODO: add robustness
-#       add option to prepare a repositori from given path and add it to
-#       everywhere it should be: .Skz, remotes...
+# TODO: add robustness and config flexibility
 #
 source ~/.Skz
 
@@ -44,39 +45,47 @@ commit () {
     fi
 }
 #
-if [ -d $LOCAL ];
-then
-    commit $LOCAL
-
-    num_pen=${#PEN[@]}
-    num_pen_name=${#PEN_NAME[@]}
-    if [ "$num_pen" -ne "$num_pen_name" ];
-    then
-        echo "ERROR: PEN and PEN_NAME length's must match"
-        exit 1
-    fi
+num_repos=${#REPOS[@]}
+r=0
+while [ "$r" -lt "$num_repos" ];
+do
+    repo=${REPOS[$r]}
+    LOCAL="$LOCAL_BASE/$repo"
     #
-    i=0
-    while [ "$i" -lt "$num_pen" ];
-    do
-        pen_path=${PEN[$i]}
-        if [ -d "$pen_path" ];
+    if [ -d $LOCAL ];
+    then
+        echo "Syncing repository $repo"
+        commit $LOCAL
+        num_pen=${#PEN_BASE[@]}
+        num_pen_name=${#PEN_NAME[@]}
+        if [ "$num_pen" -ne "$num_pen_name" ];
         then
-            rep_name=${PEN_NAME[$i]}
-            if [[ $rep_name == "--"* ]]; # check whether it is a just backup rep
-            then
-                rep_name=${rep_name:2}  # extract -- from repository name
-            else
-                commit $pen_path
-                cd $LOCAL
-                echo "··· Pulling from $rep_name to $LOCAL_NAME"
-                git pull $rep_name master
-            fi
-            cd $pen_path
-            echo "··· Pulling from $LOCAL_NAME to $rep_name"
-            git pull $LOCAL_NAME master
+            echo "ERROR: PEN and PEN_NAME length's must match"
+            exit 1
         fi
-        let "i++"
-    done
-fi
-
+        #
+        i=0
+        while [ "$i" -lt "$num_pen" ];
+        do
+            pen_path="${PEN_BASE[$i]}/$repo"
+            if [ -d "$pen_path" ];
+            then
+                rep_name=${PEN_NAME[$i]}
+                if [[ $rep_name == "--"* ]]; # check whether it is a just backup rep (JBR)
+                then
+                    rep_name=${rep_name:2}  # extract -- from repository name
+                else
+                    commit $pen_path
+                    cd $LOCAL
+                    echo "··· Pulling from $rep_name to $LOCAL_NAME"
+                    git pull $rep_name master
+                fi
+                cd $pen_path
+                echo "··· Pulling from $LOCAL_NAME to $rep_name"
+                git pull $LOCAL_NAME master
+            fi
+            let "i++"
+        done
+    fi
+    let "r++"
+done
