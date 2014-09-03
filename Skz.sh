@@ -126,7 +126,7 @@ if [ ! -z $BARE_URL ] && [ ! -z $BARE_SYNC ]
 then
     echo "Checking $BARE_URL for bare $BARE_NAME"
     ping -w 1 -c 1 $BARE_URL > /dev/null
-    if [ ! $? -eq 0]
+    if [ ! $? -eq 0 ]
     then
         BARE_SYNC=
     fi
