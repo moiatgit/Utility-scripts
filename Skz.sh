@@ -17,6 +17,13 @@
 #    PEN_NAME=("«pen1 name rep»" "«pen2 name rep»")
 #    REPOS=("«path to repo1»" "«path to repo 2»")
 # When pen name repository starts with -- Skz treats as JBK and no commit is
+#    Optionally you can add the following variables on the
+#    configuration file in order to allow syncing on a bare repository
+#
+#    BARE_NAME=«name of the bare repo»
+#    BARE_URL=«url of the bare repo»
+#
+#
 # performed on this repository.
 #
 # TODO: add robustness and config flexibility
@@ -109,3 +116,15 @@ do
     fi
     let "r++"
 done
+
+if [ ! -z $BARE_URL ]
+then
+    ping -w 1 -c 1 $BARE_URL > /dev/null
+fi
+
+if [ $? == 0 -o ! -z $BARE_NAME ]
+then
+    echo "Syncing with bare $BARE_NAME"
+    git pull $BARE_NAME master
+    git push $BARE_NAME master
+fi
