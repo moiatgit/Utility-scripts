@@ -117,12 +117,22 @@ do
     let "r++"
 done
 
-if [ ! -z $BARE_URL ]
+if [ ! -z $BARE_NAME ]
 then
-    ping -w 1 -c 1 $BARE_URL > /dev/null
+    BARE_SYNC=1
 fi
 
-if [ $? == 0 -o ! -z $BARE_NAME ]
+if [ ! -z $BARE_URL ] && [ ! -z $BARE_SYNC ]
+then
+    echo "Checking $BARE_URL for bare $BARE_NAME"
+    ping -w 1 -c 1 $BARE_URL > /dev/null
+    if [ ! $? -eq 0]
+    then
+        BARE_SYNC=
+    fi
+fi
+
+if [ ! -z $BARE_SYNC ]
 then
     echo "Syncing with bare $BARE_NAME"
     git pull $BARE_NAME master
