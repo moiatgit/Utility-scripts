@@ -41,27 +41,28 @@ fi
 TMPFILE="/tmp/`date`.$RANDOM"
 #
 commit () {
-    # commits on path $1 if exists
+    # commits on path $1 with name $2 if exists
     # it recursively adds all the possible changes to the repository
     if [ -d $1 ];
     then
         cd $1
         find . -type d | grep -v "\.\w" | sed "s/\(.*\)/\"\1\"/g" | xargs git add -A
-
-        if [[ ! -n $(git commit -am "$COMMIT_COMMENT" | tee "$TMPFILE" | grep "nothing to commit (working directory clean)") ]];
+        git commit -am "$COMMIT_COMMENT" &> "$TMPFILE"
+        if [[ ! -n $(grep "nothing to commit (working directory clean)" "$TMPFILE") ]];
         then
-            echo "··· Commit on $1"
+            echo "··· Commit on $2"
             cat "$TMPFILE"
         else
-            echo "... Commit on $1: no changes"
+            echo "... Commit on $2: no changes"
         fi
     fi
 }
 
-pull () {
-    # pulls from $1 directory with name $2 to $3
+gitpull () {
+    # pulls from $1 directory with repo name $2 to $3
     cd "$1"
-    if [[ ! -n $(git pull "$2" master | tee "$TMPFILE" | grep "Already up-to-date.") ]];
+    git pull "$2" master &> "$TMPFILE"
+    if [[ ! -n $(grep "Already up-to-date." "$TMPFILE") ]];
     then
         echo "··· Pulling from $2 to $3"
         cat "$TMPFILE"
@@ -69,6 +70,35 @@ pull () {
         echo "... Pulling from $2 to $3: no changes"
     fi
 }
+
+gitpush () {
+    # pushes from repo $2 to $1 directory with name $3
+    cd "$1"
+    git push "$2" master &> "$TMPFILE"
+    if [[ ! -n $(grep "Everything up-to-date" "$TMPFILE") ]];
+    then
+        echo "··· Pushing from $3 to $2"
+        cat "$TMPFILE"
+    else
+        echo "... Pushing from $3 to $2: no changes"
+    fi
+}
+#
+# Determine if it has to sync with a bare repo
+if [ ! -z $BARE_NAME ]
+then
+    BARE_SYNC=1
+fi
+
+if [ ! -z $BARE_URL ] && [ ! -z $BARE_SYNC ]
+then
+    echo "Checking $BARE_URL for bare $BARE_NAME"
+    ping -w 1 -c 1 $BARE_URL > /dev/null
+    if [ ! $? -eq 0 ]
+    then
+        BARE_SYNC=
+    fi
+fi
 #
 num_repos=${#REPOS[@]}
 r=0
@@ -80,7 +110,13 @@ do
     if [ -d $LOCAL ];
     then
         echo "Syncing repository $repo"
-        commit $LOCAL
+        #
+        if [ ! -z $BARE_SYNC ]
+        then
+            gitpull $LOCAL $BARE_NAME $LOCAL_NAME
+        fi
+        #
+        commit $LOCAL $LOCAL_NAME
         num_pen=${#PEN_BASE[@]}
         num_pen_name=${#PEN_NAME[@]}
         if [ "$num_pen" -ne "$num_pen_name" ];
@@ -100,41 +136,20 @@ do
                 then
                     rep_name=${rep_name:2}  # extract -- from repository name
                 else
-                    commit $pen_path
-                    pull "$LOCAL" "$rep_name" "$LOCAL_NAME"
-                    #cd $LOCAL
-                    #echo "··· Pulling from $rep_name to $LOCAL_NAME"
-                    #git pull $rep_name master
+                    commit $pen_path $rep_name
+                    gitpull "$LOCAL" "$rep_name" "$LOCAL_NAME"
                 fi
-                pull "$pen_path" "$LOCAL_NAME" "$rep_name"
-                #cd $pen_path
-                #echo "··· Pulling from $LOCAL_NAME to $rep_name"
-                #git pull $LOCAL_NAME master
+                gitpull "$pen_path" "$LOCAL_NAME" "$rep_name"
             fi
             let "i++"
         done
+        #
+        if [ ! -z $BARE_SYNC ]
+        then
+            gitpush $LOCAL $BARE_NAME $LOCAL_NAME
+        fi
     fi
+    #
     let "r++"
 done
 
-if [ ! -z $BARE_NAME ]
-then
-    BARE_SYNC=1
-fi
-
-if [ ! -z $BARE_URL ] && [ ! -z $BARE_SYNC ]
-then
-    echo "Checking $BARE_URL for bare $BARE_NAME"
-    ping -w 1 -c 1 $BARE_URL > /dev/null
-    if [ ! $? -eq 0 ]
-    then
-        BARE_SYNC=
-    fi
-fi
-
-if [ ! -z $BARE_SYNC ]
-then
-    echo "Syncing with bare $BARE_NAME"
-    git pull $BARE_NAME master
-    git push $BARE_NAME master
-fi
