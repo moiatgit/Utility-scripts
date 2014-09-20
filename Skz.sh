@@ -38,7 +38,7 @@ else
     COMMIT_COMMENT="$1"
 fi
 
-TMPFILE="/tmp/`date`.$RANDOM"
+TMPFILE="/tmp/Skz_`date`.$RANDOM"
 #
 commit () {
     # commits on path $1 with name $2 if exists
