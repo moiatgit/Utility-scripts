@@ -128,14 +128,15 @@ class RstFile:
 class Operation:
     """ This class encapsulates the operation to be performed on a
     file """
-    Set, Del, List = range(3)    # all supported operations
+    Set, Del, List, Get = range(4)    # all supported operations
     def __init__(self, operation, key=None, val=None):
         self.operation = operation
         self.key = key
         self.val = val
     def key_required(self):
         """ returns true if the operation requires a key name """
-        return self.operation in (Operation.Set, Operation.Del)
+        return self.operation in (Operation.Set, Operation.Del,
+                                  Operation.Get)
     def val_required(self):
         """ returns true if the operation requires a val """
         return self.operation == Operation.Set
@@ -166,6 +167,8 @@ class Operation:
             self._perform_del(path)
         elif self.operation == Operation.List:
             self._perform_list(path)
+        elif self.operation == Operation.Get:
+            self._perform_get(path)
 
     def _perform_set(self, path):
         """ sets the new pair on path """
@@ -195,6 +198,15 @@ class Operation:
         metadata = rst.get_metadata()
         if not self.key or self.key in metadata:
             print "%s: %s"%(path, metadata)
+
+    def _perform_get(self, path):
+        """ shows the value of the key if present"""
+        assert self.key
+        rst = RstFile(path)
+        metadata = rst.get_metadata();
+        if self.key in metadata:
+            print "%s[%s]: %s"%(path, self.key, metadata[self.key])
+
 
 #
 def is_rst_file(path):
@@ -228,6 +240,11 @@ def parse_keyval(options):
             key, val = options.keyval.split(":")
     return key, val
 
+def one_and_only_one_operation_defined(options):
+    """ returns True iff one and only one operation is defined """
+    return (options.option_set ^ options.option_del ^
+            options.option_ls ^ options.option_get)
+
 def checkParams():
     """ checks that the arguments of the program call are as expected. 
     In case something's wrong, an error missage is issued and 
@@ -241,6 +258,7 @@ def checkParams():
     p.add_argument("-s", "--set", action="store_true", help="Adds/modify a metadata value", dest="option_set")
     p.add_argument("-d", "--delete", action="store_true", help="Delete an existing key", dest="option_del")
     p.add_argument("-l", "--list", action="store_true", help="List all metadata", dest="option_ls")
+    p.add_argument("-g", "--get", action="store_true", help="Gets the value of a key (when present)", dest="option_get")
     p.add_argument("--key", action="store", help="Key name", dest="key")
     p.add_argument("--val", action="store", help="Value", dest="val")
     p.add_argument("-p", "--pair", action="store", help="Pair key:value", dest="keyval")
@@ -252,8 +270,8 @@ def checkParams():
         print >> sys.stderr, "Error: no files to act on"
         sys.exit(2)
     #
-    if not (options.option_set ^ options.option_del ^ options.option_ls):
-        print >> sys.stderr, "Error: Please, select one and just one option (set/del/list)"
+    if not (one_and_only_one_operation_defined(options)):
+        print >> sys.stderr, "Error: Please, select one and just one option (set/del/list/get)"
         sys.exit(4)
     #
 
@@ -263,6 +281,8 @@ def checkParams():
         op = Operation.Del
     elif options.option_ls:
         op = Operation.List
+    elif options.option_get:
+        op = Operation.Get
 
     key, val = parse_keyval(options)
 
