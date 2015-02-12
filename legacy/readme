@@ -1,0 +1,3 @@
+This folder contains scripts that are no longer in use for any reason.
+For example, ies_descarrega.py works only with an old version of
+moodle (1.7 or something) and not for >=2.4 (the one I'm using now)
