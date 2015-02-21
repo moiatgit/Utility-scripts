@@ -14,6 +14,9 @@
 # 4. if direction is '>' or '<>' pushes changes to repository name
 #   Note: if direction is not specified, it is assumed <>
 
+# XXX TODO: offer a way to dissable autocommit on all files! e.g. add
+# a repo type at the begining of the line
+
 import sys, os, datetime, re
 import subprocess
 
