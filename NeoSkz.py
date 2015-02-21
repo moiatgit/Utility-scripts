@@ -49,29 +49,35 @@ def do_commit_on_path(path, message):
         First it checks if path has been already commited """
     if path not in _commits_in_path:
         _commits_in_path[path]=False
-        try:
+        if os.path.exists(path):
             os.chdir(path)
             res = run_command(_COMMAND_COMMIT%message)
             if _WORKING_DIRECTORY_CLEAN not in res:
                 _commits_in_path[path]=True
-        except OSError:
-            print("WARNING: path %s unavailable"%path)
+        else:
+            print("Warning: path not found '%s'"%path)
 
 def do_pull(path, repo, branch):
     """ tries to pull from repo """
-    os.chdir(path)
-    command = _COMMAND_PULL%(repo, branch)
-    res = run_command(command)
-    if has_error(res):
-        print(res)
+    if os.path.exists(path):
+        os.chdir(path)
+        command = _COMMAND_PULL%(repo, branch)
+        res = run_command(command)
+        if has_error(res):
+            print(res)
+    else:
+        print("Warning: path not found '%s'"%path)
 
 def do_push(path, repo, branch):
     """ tries to push to repo """
-    os.chdir(path)
-    command = _COMMAND_PUSH%(repo, branch)
-    res = run_command(command)
-    if has_error(res):
-        print(res)
+    if os.path.exists(path):
+        os.chdir(path)
+        command = _COMMAND_PUSH%(repo, branch)
+        res = run_command(command)
+        if has_error(res):
+            print(res)
+    else:
+        print("Warning: path not found '%s'"%path)
 
 def processa(path, direction, repo, branch, message):
     print("\nOn path: %s"%path)
