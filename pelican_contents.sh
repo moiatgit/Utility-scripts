@@ -65,6 +65,7 @@ do
             echo `rm -v "$link"`
         elif [ ! -f "$link" -a $action = "ADD" ]
         then
+            mkdir -p "$dirn"
             echo `ln -s "$filename" "$link" && ls "$link"`
         else
             echo "WARNING: cannot $action on $link"
