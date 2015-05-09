@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-echo "Switche keyboard layout to/from Filco's Majestouch tenkeyless with JA layout"
+echo "Switch keyboard layout to/from Filco's Majestouch tenkeyless with JA layout"
 
 if [[ `setxkbmap -query | grep "layout:     jp"` == "" ]]
 then
