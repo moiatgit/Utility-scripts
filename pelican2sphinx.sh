@@ -34,3 +34,8 @@ do
         fi
     fi
 done
+
+# changes with vim
+# g/<{filename}/normal kJ
+# %s/`\(.\{-\}\) <{filename}\s*\(\/.\{-\}\/\)*\(.\{-\}\)\.rst>`_/:doc:`\1 <\3>`/gc
+

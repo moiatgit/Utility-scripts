@@ -81,21 +81,21 @@ def registra_repetit_a_directori(d):
         dicD[d]=dicD[d]+1
     else:
         dicD[d]=1
-            
+
 def mostra_iguals():
     """ mostra la llista de parells de fitxers que s'han trobat iguals """
     global dicF
     for f in dicF.keys():
         for feq in dicF[f]:
             print "%s; %s"%(f, feq)
-            
+
 def mostra_dir_iguals():
     """ mostra els directoris que contenen fitxers repetits """
     global dicD
     for d in dicD.keys():
         nfitxers = len(os.walk(d).next()[2])    # compta el nombre total de fitxers al directori
         print d, "%s repetits de %s fitxers = %1.1f%%"%(dicD[d], nfitxers, (100.0 * dicD[d] / nfitxers) )
-        
+
 def mostra_resum():
     """ mostra un resum estadistic """
     global nf

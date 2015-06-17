@@ -5,8 +5,7 @@ then
     echo "Es procedeix a executar els remappings directament per a aquesta sessió"
     xmodmap -e "keycode 102 = ISO_Level3_Shift"
     xmodmap -e "keycode 100 = ISO_Level3_Shift"
-    xmodmap -e "keycode 101 = Alt_R"
-    xmodmap -e "keycode 108 = Super_L"
+    xmodmap -e "keycode 101 = Super_L"
     echo "Fet!"
     exit
 fi
@@ -21,8 +20,7 @@ then
         cat > "$Xmodmapfile" << END
 keycode 102 = ISO_Level3_Shift
 keycode 100 = ISO_Level3_Shift
-keycode 101 = Alt_R
-keycode 108 = Super_L
+keycode 101 = Super_L
 END
         echo "$Xmodmapfile has been created"
     fi

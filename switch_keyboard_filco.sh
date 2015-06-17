@@ -13,7 +13,7 @@ then
     fi
 else
     echo "Already jp"
-    setxkbmap -layout es -variant cat
+    setxkbmap -layout es -variant catfilco
     if [ "$?" ]
     then
         echo "Restored to es layout"
