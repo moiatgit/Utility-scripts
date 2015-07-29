@@ -35,7 +35,7 @@ do
     fi
 done
 
-# changes with vim
+# changes within vim
 # g/<{filename}/normal kJ
 # %s/`\(.\{-\}\) <{filename}\s*\(\/.\{-\}\/\)*\(.\{-\}\)\.rst>`_/:doc:`\1 <\3>`/gc
-
+# g/^Introducció\n========/normal cj.. topic:: Introducció^[jV/^==^Mkk>

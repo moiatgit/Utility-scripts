@@ -85,41 +85,67 @@ do
     current_repository=${PROJECT_LIST[$r]}
 
     # Check if the folder exists
-    if [ ! -d $current_repository ];
+    if [ -d $current_repository ];
     then
-        echo "ERROR: review if $current_repository does really exist"
-        exit 1
-    fi
+        cd $current_repository
 
-    cd $current_repository
+        # check if the folder is a git repository
+        if [ `git status 2>&1 |  grep "^fatal:" | wc -l` -eq 1 ]; 
+        then
+            echo "ERROR: review if $current_repository is a git repository"
+            exit 1
+        fi
 
-    # check if the folder is a git repository
-    if [ `git status 2>&1 |  grep "^fatal:" | wc -l` -eq 1 ]; 
-    then
-        echo "ERROR: review if $current_repository is a git repository"
-        exit 1
-    fi
+        # check if the repository does have a $BARE_REPO_NAME remote
+        if [ `git remote | grep "^$BARE_REPO_NAME\$" | wc -l` -eq 0 ];
+        then
+            echo "ERROR: review if $current_repository repository has a remote named repo"
+            exit 1
+        fi
 
-    # check if the repository does have a $BARE_REPO_NAME remote
-    if [ `git remote | grep "^$BARE_REPO_NAME\$" | wc -l` -eq 0 ];
-    then
-        echo "ERROR: review if $current_repository repository has a remote named repo"
-        exit 1
-    fi
+        # getting url for $BARE_REPO_NAME repository
+        repo_url=`git remote -v | grep "^$BARE_REPO_NAME\>" | cut -f 2 | cut -d" " -f 1 | sort -u`
 
-    echo "Processing repository $current_repository"
+        echo "Processing repository $current_repository"
 
-    # pull from $BARE_REPO_NAME
-    gitpull $BARE_REPO_NAME
+        BARE_SYNC=1
+        if [[ ${repo_url:0:3} == "ssh" ]];
+        then
+            echo -n "... Checking for availablilty of repository $BARE_REPO_NAME: "
+            hosturl=`echo $repo_url | cut -d@ -f 2 | cut -d\/ -f 1`
+            ping -w 1 -c 1 $hosturl &> /dev/null
+            if [ ! $? -eq 0 ];
+            then
+                BARE_SYNC=
+                echo "not accessible"
+            else
+                echo "ok"
+            fi
+        else
+            if [ ! -d "$repo_url" ];
+            then
+                BARE_SYNC=
+                echo "WARNING: $BARE_REPO_NAME is not accessible"
+            fi
+        fi
 
-    # commiting everything in this repository
-    changes_commited=0
-    commit
+        # pull from $BARE_REPO_NAME
+        if [[ $BARE_SYNC = 1 ]];
+        then
+            gitpull $BARE_REPO_NAME
+        fi
 
-    # pushing changes to $BARE_REPO_NAME
-    if [ $changes_commited -eq 1 ];
-    then
-        gitpush $BARE_REPO_NAME
+        # commiting everything in this repository
+        changes_commited=0
+        commit
+
+        # pushing changes to $BARE_REPO_NAME
+        if [[ $changes_commited = 1 && $BARE_SYNC = 1 ]];
+        then
+            gitpush $BARE_REPO_NAME
+        fi
+    else
+        echo "WARNING: $current_repository is not available"
     fi
 
     let "r++"
