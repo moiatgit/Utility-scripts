@@ -1,4 +1,5 @@
 # Function definitions for the xcd command
+
 # The xcd command allows you to directly jump to a directory when it has been
 # marked. Otherwise it will behave as usual cd command
 
@@ -12,6 +13,10 @@
 #   $ xcd_ls        #  shows list of marked dirs
 #   $ xcd_mark      #  marks cwd if not yet
 #   $ xcd_unmark    #  unmarks cwd if already marked
+
+# This script is based on the one found at:
+#  http://jeroenjanssens.com/2013/08/16/quickly-navigate-your-filesystem-from-the-command-line.html
+
 
 export XCD_PATH=$HOME/.config/xcdpaths
 
