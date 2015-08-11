@@ -22,7 +22,12 @@ export XCD_PATH=$HOME/.config/xcdpaths
 
 function xcd () {
 
-    cd -P $XCD_PATH/$1 &> /dev/null ||  cd $1;
+    if [[ "$1" == "" ]];
+    then
+        cd
+    else
+        cd -P $XCD_PATH/$1 &> /dev/null ||  cd $1;
+    fi
 }
 
 function xcd_ls () {
