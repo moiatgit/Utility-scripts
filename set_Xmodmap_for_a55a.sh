@@ -1,5 +1,5 @@
 #! /bin/bash
-echo "Sets the ~/.Xmodmap file to remap Filco's keys"
+echo "Sets the ~/.Xmodmap file to remap cat keys"
 if [[ "$1" == "go" ]];
 then
     xmodmap -e "keycode  21 = exclamdown questiondown equal plus EuroSign EuroSign equal plus"
