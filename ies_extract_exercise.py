@@ -5,8 +5,7 @@
 # Moodle 2.
 # The script 
 # TODO:
-#   1. extract _STUDENT_NAME_CONVERSION to an external file (you won't
-#   want to show them on github)
+#   1. add jar
 #   2. allow configuring the repository of downloaded bundles as a
 #   different folder from the destination of the extracted contents
 #   3. Allow for confirmation and improve warnings
@@ -15,33 +14,25 @@
 import os, re
 import zipfile
 import tempfile, shutil
+import json
 
 _MOODLE_FILE_TEMPL = "(.*?)-(.*?)-(\d+)\.zip"
 _SUBMISSION_TEMPL  = "(.*?)_(.*?)_assignsubmission_file_(.*)"
 _VALID_CHARS       = "[^a-zA-Z0-9]+"
 _REPLACE_CHAR      = "_"
 
-_STUDENT_NAME_CONVERSION = {
-    "Alberto_Garc_a_Beato" : "agarcia1",
-    "Andr_s_Gracia_Rodr_guez" : "agracia",
-    "Daniel_Arredondo_Mart_nez" : "darredondo",
-    "Daniel_Enrique_Salas_Su_rez" : "dsalas",
-    "Daniel_Mart_Ram_rez" : "dmarti",
-    "Ferran_de_San_Martin_Lagranje" : "fdesanmartin",
-    "Israel_del_Toro_Mu_oz" : "ideltoro",
-    "Joel_Francisco_G_mez_Garcia" : "jgomez",
-    "Juan_Gimenez_Aguilar" : "jgimenez",
-    "Juan_Guerra" : "jguerra",
-    "Kevin_Chong_Benavides" : "kchong",
-    "Laura_Mu_oz_Isidro" : "lmunoz",
-    "Marc_G_mez_Aguilera" : "mgamez",
-    "Miguel_Angel_Rodriguez_Fernandez" : "mrodriguez",
-    "Raul_Guerrero_Carrasco" : "rguerrero",
-    "Rosa_Ramon_Pedrosa" : "rramon",
-    "Sandra_Mu_oz_Isidro" : "smunoz",
-    "Sergio_Reinoso_Fuertes" : "sreinoso"
-}
 
+# External file with mapping between expected students and its folders
+# This map just eases folder naming
+_EXTERNAL_CONFIGURATION_FILE = os.path.abspath("./ies_extract_params.json")
+if os.path.isfile(_EXTERNAL_CONFIGURATION_FILE):
+    with open(_EXTERNAL_CONFIGURATION_FILE) as f:
+        _STUDENT_NAME_CONVERSION = json.loads(f.read())
+else:
+    _STUDENT_NAME_CONVERSION = dict()
+
+
+# Commands for uncompressing files
 _UNCOMPRESS_COMMAND = {
         ".tar.gz" : "tar xzvf %s",
         ".tar"    : "tar xvf %s",
