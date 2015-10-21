@@ -1,6 +1,6 @@
 #! /bin/bash
 echo "Sets xmodmap for Filco 91 keys keyboard"
-if [[ "$1" == "go" ]];
+if [[ "$1" == "gofull" ]];
 then
     # Top row
     xmodmap -e "keycode   9 = Escape NoSymbol Escape"
@@ -108,6 +108,114 @@ then
     xmodmap -e "keycode 113 = Left NoSymbol Left"
     xmodmap -e "keycode 114 = Right NoSymbol Right"
     xmodmap -e "keycode 116 = Down NoSymbol Down"
+elif [[ "$1" == "go" ]];        # partial mapping: just changes
+then
+    # Top row
+    #xmodmap -e "keycode   9 = Escape NoSymbol Escape"
+    #xmodmap -e "keycode  67 = F1 F1 F1 F1 F1 F1 XF86Switch_VT_1"
+    #xmodmap -e "keycode  68 = F2 F2 F2 F2 F2 F2 XF86Switch_VT_2"
+    #xmodmap -e "keycode  69 = F3 F3 F3 F3 F3 F3 XF86Switch_VT_3"
+    #xmodmap -e "keycode  70 = F4 F4 F4 F4 F4 F4 XF86Switch_VT_4"
+    #xmodmap -e "keycode  71 = F5 F5 F5 F5 F5 F5 XF86Switch_VT_5"
+    #xmodmap -e "keycode  72 = F6 F6 F6 F6 F6 F6 XF86Switch_VT_6"
+    #xmodmap -e "keycode  73 = F7 F7 F7 F7 F7 F7 XF86Switch_VT_7"
+    #xmodmap -e "keycode  74 = F8 F8 F8 F8 F8 F8 XF86Switch_VT_8"
+    #xmodmap -e "keycode  75 = F9 F9 F9 F9 F9 F9 XF86Switch_VT_9"
+    #xmodmap -e "keycode  76 = F10 F10 F10 F10 F10 F10 XF86Switch_VT_10"
+    #xmodmap -e "keycode  95 = F11 F11 F11 F11 F11 F11 XF86Switch_VT_11"
+    #xmodmap -e "keycode  96 = F12 F12 F12 F12 F12 F12 XF86Switch_VT_12"
+    #xmodmap -e "keycode 107 = Print Sys_Req Print Sys_Req"
+    #xmodmap -e "keycode  78 = Scroll_Lock NoSymbol Scroll_Lock"
+    #xmodmap -e "keycode 127 = Pause Break Pause Break"
+
+    # Second row
+    #xmodmap -e "keycode  49 = masculine ordfeminine masculine ordfeminine backslash backslash backslash"
+    #xmodmap -e "keycode  10 = 1 exclam 1 exclam bar exclamdown bar"
+    #xmodmap -e "keycode  11 = 2 quotedbl 2 quotedbl at oneeighth at"
+    #xmodmap -e "keycode  12 = 3 periodcentered 3 periodcentered numbersign sterling numbersign"
+    xmodmap -e "keycode  13 = 4 dollar 4 dollar EuroSign dollar EuroSign"
+    #xmodmap -e "keycode  14 = 5 percent 5 percent onehalf threeeighths onehalf"
+    #xmodmap -e "keycode  15 = 6 ampersand 6 ampersand notsign fiveeighths notsign"
+    #xmodmap -e "keycode  16 = 7 apostrophe 7 apostrophe braceleft seveneighths braceleft"
+    #xmodmap -e "keycode  17 = 8 parenleft 8 parenleft bracketleft trademark bracketleft"
+    #xmodmap -e "keycode  18 = 9 parenright 9 parenright bracketright plusminus bracketright"
+    #xmodmap -e "keycode  19 = 0 asciitilde 0 asciitilde braceright degree braceright"
+    #xmodmap -e "keycode  20 = minus equal minus equal backslash questiondown backslash"
+    #xmodmap -e "keycode  21 = asciicircum asciitilde asciicircum asciitilde dead_cedilla dead_ogonek dead_cedilla"
+    xmodmap -e "keycode 132 = EuroSign bar EuroSign bar"
+    #xmodmap -e "keycode  22 = BackSpace BackSpace BackSpace BackSpace"
+
+    # third row
+    #xmodmap -e "keycode  23 = Tab ISO_Left_Tab Tab ISO_Left_Tab"
+    xmodmap -e "keycode  24 = q Q q Q aacute Aacute aacute"
+    #xmodmap -e "keycode  25 = w W w W dead_grave dead_circumflex dead_grave"
+    xmodmap -e "keycode  26 = e E e E eacute Eacute eacute"
+    #xmodmap -e "keycode  27 = r R r R paragraph registered paragraph"
+    #xmodmap -e "keycode  28 = t T t T tslash Tslash tslash"
+    #xmodmap -e "keycode  29 = y Y y Y leftarrow yen leftarrow"
+    xmodmap -e "keycode  30 = u U u U uacute Uacute uacute"
+    xmodmap -e "keycode  31 = i I i I iacute Iacute iacute"
+    xmodmap -e "keycode  32 = o O o O oacute Oacute oacute"
+    #xmodmap -e "keycode  33 = p P p P thorn THORN thorn"
+    xmodmap -e "keycode  34 = at grave at grave dead_grave dead_circumflex dead_grave"
+    xmodmap -e "keycode  35 = bracketleft braceleft bracketleft braceleft bracketright bracketright bracketright"
+    #xmodmap -e "keycode  36 = Return NoSymbol Return"
+
+    # Fourth row
+    #xmodmap -e "keycode  66 = Caps_Lock NoSymbol Caps_Lock"
+    xmodmap -e "keycode  38 = a A a A agrave Agrave agrave"
+    xmodmap -e "keycode  39 = s S s S dead_acute dead_diaeresis dead_acute"
+    xmodmap -e "keycode  40 = d D d D egrave Egrave egrave"
+    #xmodmap -e "keycode  41 = f F f F dstroke ordfeminine dstroke"
+    #xmodmap -e "keycode  42 = g G g G eng ENG eng"
+    #xmodmap -e "keycode  43 = h H h H hstroke Hstroke hstroke"
+    xmodmap -e "keycode  44 = j J j J udiaeresis Udiaeresis udiaeresis"
+    xmodmap -e "keycode  45 = k K k K idiaeresis Idiaeresis idiaeresis"
+    xmodmap -e "keycode  46 = l L l L ograve Ograve ograve"
+    xmodmap -e "keycode  47 = semicolon plus semicolon plus ntilde Ntilde ntilde"
+    xmodmap -e "keycode  48 = colon asterisk colon asterisk dead_acute dead_diaeresis dead_acute"
+    xmodmap -e "keycode  51 = bracketright braceright bracketright braceright ccedilla Ccedilla ccedilla"
+
+    # Fifht row
+    #xmodmap -e "keycode  50 = Shift_L NoSymbol Shift_L"
+    #xmodmap -e "keycode  52 = z Z z Z guillemotleft less guillemotleft"
+    #xmodmap -e "keycode  53 = x X x X guillemotright greater guillemotright"
+    xmodmap -e "keycode  54 = c C c C ccedilla Ccedilla ccedilla"
+    #xmodmap -e "keycode  55 = v V v V leftdoublequotemark leftsinglequotemark leftdoublequotemark"
+    #xmodmap -e "keycode  56 = b B b B rightdoublequotemark rightsinglequotemark rightdoublequotemark"
+    xmodmap -e "keycode  57 = n N n N ntilde Ntilde ntilde"
+    #xmodmap -e "keycode  58 = m M m M mu masculine mu"
+    xmodmap -e "keycode  59 = comma less comma less guillemotleft multiply guillemotleft"
+    xmodmap -e "keycode  60 = period greater period greater guillemotright division guillemotright"
+    xmodmap -e "keycode  61 = slash question slash question questiondown dead_abovedot questiondown"
+    xmodmap -e "keycode  97 = backslash underscore backslash underscore"
+    #xmodmap -e "keycode  62 = Shift_R NoSymbol Shift_R"
+
+    # Botom row
+    #xmodmap -e "keycode  37 = Control_L NoSymbol Control_L"
+    #xmodmap -e "keycode 133 = Super_L NoSymbol Super_L"
+    #xmodmap -e "keycode  64 = Alt_L Meta_L Alt_L Meta_L"
+    xmodmap -e "keycode 102 = ISO_Level3_Shift NoSymbol ISO_Level3_Shift"
+    #xmodmap -e "keycode  65 = space NoSymbol space"
+    xmodmap -e "keycode 100 = ISO_Level3_Shift NoSymbol ISO_Level3_Shift"
+    xmodmap -e "keycode 101 = Super_L NoSymbol Super_L"
+    xmodmap -e "keycode 108 = Alt_R Meta_R Alt_R Meta_R"
+    #xmodmap -e "keycode 135 = Menu NoSymbol Menu"
+    #xmodmap -e "keycode 105 = Control_R NoSymbol Control_R"
+
+    # navigation keys
+    #xmodmap -e "keycode 118 = Insert NoSymbol Insert"
+    #xmodmap -e "keycode 110 = Home NoSymbol Home"
+    #xmodmap -e "keycode 112 = Prior NoSymbol Prior"
+    #xmodmap -e "keycode 119 = Delete NoSymbol Delete"
+    #xmodmap -e "keycode 115 = End NoSymbol End"
+    #xmodmap -e "keycode 117 = Next NoSymbol Next"
+
+    # Cursor keys
+    #xmodmap -e "keycode 111 = Up NoSymbol Up"
+    #xmodmap -e "keycode 113 = Left NoSymbol Left"
+    #xmodmap -e "keycode 114 = Right NoSymbol Right"
+    #xmodmap -e "keycode 116 = Down NoSymbol Down"
 
 else
     echo "$0 go: sets the mappings."
