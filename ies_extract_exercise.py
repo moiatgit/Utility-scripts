@@ -45,8 +45,8 @@ def normalize_name(name):
 
 def normalize_filename(name):
     if name.endswith(".tar.gz"):
-        filename, fileext = name.split(".", 1)
-        fileext =".%s"%fileext
+        filename = name[:len(name)-len(".tar.gz")]
+        fileext = ".tar.gz"
     else:
         filename, fileext = os.path.splitext(name)
     return "%s%s"%(normalize_name(filename), fileext), fileext
