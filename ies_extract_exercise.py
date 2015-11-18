@@ -35,8 +35,10 @@ else:
 # Commands for uncompressing files
 _UNCOMPRESS_COMMAND = {
         ".tar.gz" : "tar xzvf %s",
+        ".gz"     : "tar xzvf %s",
         ".tar"    : "tar xvf %s",
         ".zip"    : "unzip %s",
+        ".jar"    : "unzip %s",
         ".rar"    : "unrar x %s"
         }
 
