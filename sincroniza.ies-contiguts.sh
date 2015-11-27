@@ -24,7 +24,8 @@ sincroniza(){
 
 
 . $HOME/.sincro.ies-continguts
-if [ -z $repositories ];
+
+if [ -z "$repositories" ];
 then
     echo "Problema amb la definició dels repositoris"
     echo "Assegurat que ~/.sincro.ies-continguts és correcte"
