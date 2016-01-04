@@ -72,7 +72,7 @@ def create_submission_folder_if_missing(srcfilename, folder, student_name, inter
     else:
         print "$ mkdir %s"%path
         os.makedirs(path)
-        dstfilename = "%s/%s"%(path, normal_filename)
+        dstfilename = os.path.join(path, normalize_name(normal_filename))
         shutil.copyfile(srcfilename, dstfilename)
         if fileext in _UNCOMPRESS_COMMAND:
             command = _UNCOMPRESS_COMMAND[fileext]
