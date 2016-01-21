@@ -5,7 +5,7 @@
 # Moodle 2.
 # The script 
 # TODO:
-#   1. add jar
+#   1. find filetype from file command not from extension
 #   2. allow configuring the repository of downloaded bundles as a
 #   different folder from the destination of the extracted contents
 #   3. Allow for confirmation and improve warnings
@@ -34,12 +34,12 @@ else:
 
 # Commands for uncompressing files
 _UNCOMPRESS_COMMAND = {
-        ".tar.gz" : "tar xzvf %s",
-        ".gz"     : "tar xzvf %s",
-        ".tar"    : "tar xvf %s",
-        ".zip"    : "unzip %s",
-        ".jar"    : "unzip %s",
-        ".rar"    : "unrar x %s"
+        ".tar.gz" : "tar xzvf '%s'",
+        ".gz"     : "tar xzvf '%s'",
+        ".tar"    : "tar xvf '%s'",
+        ".zip"    : "jar xvf '%s'",
+        ".jar"    : "unzip '%s'",
+        ".rar"    : "unrar x '%s'"
         }
 
 def normalize_name(name):
@@ -68,11 +68,12 @@ def create_submission_folder_if_missing(srcfilename, folder, student_name, inter
     student_code = _STUDENT_NAME_CONVERSION.get(normal_student_name, normal_student_name)
     path = "%s/%s/%s"%(folder, student_code, internal_code)
     if os.path.isdir(path):
-        print "already extracted %s"%path
+        # print "already extracted %s"%path
+        pass
     else:
         print "$ mkdir %s"%path
         os.makedirs(path)
-        dstfilename = os.path.join(path, normalize_name(normal_filename))
+        dstfilename = os.path.join(path, normal_filename)
         shutil.copyfile(srcfilename, dstfilename)
         if fileext in _UNCOMPRESS_COMMAND:
             command = _UNCOMPRESS_COMMAND[fileext]
@@ -82,7 +83,7 @@ def create_submission_folder_if_missing(srcfilename, folder, student_name, inter
             returnstatus = os.system(command%normal_filename)
             if returnstatus <> 0:
                 print "ERROR: issuing command %s"%(command%normal_filename)
-            os.remove(normal_filename)
+            #os.remove(normal_filename)
             os.chdir(prevpath)
 
 
