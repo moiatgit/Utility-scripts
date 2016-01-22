@@ -5,16 +5,16 @@
 # Moodle 2.
 # The script 
 # TODO:
-#   1. find filetype from file command not from extension
-#   2. allow configuring the repository of downloaded bundles as a
+#   1. allow configuring the repository of downloaded bundles as a
 #   different folder from the destination of the extracted contents
-#   3. Allow for confirmation and improve warnings
-#   4. some refactor would be nice! This is poor code and you now it!
+#   2. Allow for confirmation and improve warnings
+#   3. some refactor would be nice! This is poor code and you now it!
 
 import os, re
 import zipfile
 import tempfile, shutil
 import json
+import subprocess
 
 _MOODLE_FILE_TEMPL = "(.*?)-(.*?)-(\d+)\.zip"
 _SUBMISSION_TEMPL  = "(.*?)_(.*?)_assignsubmission_file_(.*)"
@@ -32,15 +32,34 @@ else:
     _STUDENT_NAME_CONVERSION = dict()
 
 
-# Commands for uncompressing files
+# Commands for uncompressing files { mime-type: command }
 _UNCOMPRESS_COMMAND = {
-        ".tar.gz" : "tar xzvf '%s'",
-        ".gz"     : "tar xzvf '%s'",
-        ".tar"    : "tar xvf '%s'",
-        ".zip"    : "jar xvf '%s'",
-        ".jar"    : "unzip '%s'",
-        ".rar"    : "unrar x '%s'"
-        }
+    "x-7z-compressed" : "p7zip -d '%s'",
+    "gzip" : "tar xzvf '%s'",
+    "x-tar" : "tar xvf '%s'",
+    "x-rar" : "unrar x '%s'",
+    "zip" : "jar xvf '%s'",
+    "java-archive" : "jar xvf '%s'",
+}
+
+# regex to extract app type from mimetype
+_MIMETYPE_EXPR='^.* application\\/(.*);.*$'
+
+def getCompressCommand(path):
+    """ returns the command to be issued for uncompressing the file.
+    If the filetype is unknown, none is return instead """
+    mimetype = subprocess.Popen("/usr/bin/file --mime '%s'"%path, shell=True, stdout=subprocess.PIPE).communicate()[0]
+    l = re.findall(_MIMETYPE_EXPR, mimetype)
+    command = None
+    if len(l) < 1:
+        return None
+    if len(l) > 1:
+        print "WARNING: more than one type for file %s (%s)"%(path, l)
+    filetype = l[0]
+    if filetype in _UNCOMPRESS_COMMAND:
+        command = _UNCOMPRESS_COMMAND[filetype]
+    return command
+
 
 def normalize_name(name):
     return re.sub(_VALID_CHARS, _REPLACE_CHAR, name)
@@ -75,8 +94,8 @@ def create_submission_folder_if_missing(srcfilename, folder, student_name, inter
         os.makedirs(path)
         dstfilename = os.path.join(path, normal_filename)
         shutil.copyfile(srcfilename, dstfilename)
-        if fileext in _UNCOMPRESS_COMMAND:
-            command = _UNCOMPRESS_COMMAND[fileext]
+        command = getCompressCommand(srcfilename)
+        if not command == None:
             prevpath = os.getcwd()
             os.chdir(path)
             print "%s/ $ %s"%(path, command%normal_filename)
@@ -85,6 +104,8 @@ def create_submission_folder_if_missing(srcfilename, folder, student_name, inter
                 print "ERROR: issuing command %s"%(command%normal_filename)
             #os.remove(normal_filename)
             os.chdir(prevpath)
+        else:
+            print "Direct file: %s"%normal_filename
 
 
 def process_zip(folder, zipfilename):
