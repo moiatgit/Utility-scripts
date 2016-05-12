@@ -108,7 +108,7 @@ then
     xmodmap -e "keycode 113 = Left NoSymbol Left"
     xmodmap -e "keycode 114 = Right NoSymbol Right"
     xmodmap -e "keycode 116 = Down NoSymbol Down"
-elif [[ "$1" == "go" ]];        # partial mapping: just changes
+elif [[ "$1" == "gojp" ]];        # partial mapping: just changes for jp layout
 then
     # Top row
     #xmodmap -e "keycode   9 = Escape NoSymbol Escape"
@@ -189,6 +189,7 @@ then
     xmodmap -e "keycode  60 = period greater period greater guillemotright division guillemotright"
     xmodmap -e "keycode  61 = slash question slash question questiondown dead_abovedot questiondown"
     xmodmap -e "keycode  97 = backslash underscore backslash underscore"
+    xmodmap -e "keycode  97 = backslash underscore backslash underscore"
     #xmodmap -e "keycode  62 = Shift_R NoSymbol Shift_R"
 
     # Botom row
@@ -216,6 +217,44 @@ then
     #xmodmap -e "keycode 113 = Left NoSymbol Left"
     #xmodmap -e "keycode 114 = Right NoSymbol Right"
     #xmodmap -e "keycode 116 = Down NoSymbol Down"
+elif [[ "$1" == "goca" ]];        # partial mapping: just changes for ca layout
+then
+    # First row
+    xmodmap -e "keycode  13 = 4 dollar 4 dollar asciitilde EuroSign 4 dollar"
+    xmodmap -e "keycode 132 = EuroSign bar EuroSign bar"
+
+    xmodmap -e "keycode  21 = exclamdown questiondown equal plus EuroSign EuroSign equal plus"
+    xmodmap -e "keycode  24 = q Q q Q aacute Aacute q Q"
+    xmodmap -e "keycode  38 = a A a A agrave Agrave"
+    xmodmap -e "keycode  26 = e E e E eacute Eacute e E"
+    xmodmap -e "keycode  40 = d D d D egrave Egrave d D"
+    xmodmap -e "keycode  30 = u U u U uacute Uacute u U"
+    xmodmap -e "keycode  31 = i I i I iacute Iacute i I"
+    xmodmap -e "keycode  32 = o O o O oacute Oacute o O"
+    xmodmap -e "keycode  44 = j J j J udiaeresis Udiaeresis j J"
+    xmodmap -e "keycode  45 = k K k K Idiaeresis Idiaeresis k K"
+    xmodmap -e "keycode  46 = l L l L ograve Ograve l L"
+
+    xmodmap -e "keycode  34 = asciicircum grave bracketleft braceleft bracketleft dead_abovering bracketleft braceleft"
+
+    xmodmap -e "keycode  54 = c C c C ccedilla Ccedilla c C"
+    xmodmap -e "keycode  57 = n N n N ntilde Ntilde n N"
+    xmodmap -e "keycode  52 = z Z z Z less guillemotleft z Z"
+    xmodmap -e "keycode  53 = x X x X greater guillemotright x X"
+
+    xmodmap -e "keycode  97 = backslash underscore backslash underscore"
+
+    # Botom row
+    #xmodmap -e "keycode  37 = Control_L NoSymbol Control_L"
+    #xmodmap -e "keycode 133 = Super_L NoSymbol Super_L"
+    #xmodmap -e "keycode  64 = Alt_L Meta_L Alt_L Meta_L"
+    xmodmap -e "keycode 102 = ISO_Level3_Shift NoSymbol ISO_Level3_Shift"
+    #xmodmap -e "keycode  65 = space NoSymbol space"
+    xmodmap -e "keycode 100 = ISO_Level3_Shift NoSymbol ISO_Level3_Shift"
+    xmodmap -e "keycode 101 = Super_L NoSymbol Super_L"
+    xmodmap -e "keycode 108 = Alt_R Meta_R Alt_R Meta_R"
+    #xmodmap -e "keycode 135 = Menu NoSymbol Menu"
+    #xmodmap -e "keycode 105 = Control_R NoSymbol Control_R"
 
 else
     echo "$0 go: sets the mappings."
