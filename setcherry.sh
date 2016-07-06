@@ -1,3 +1,3 @@
 #! /bin/sh
 echo "Key remapping"
-xmodmap Xmodmap.ca.cherry105
+xmodmap $HOME/bin/Xmodmap.ca.cherry105
