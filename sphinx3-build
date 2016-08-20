@@ -1,0 +1,28 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+"""
+This script is defined to execute Sphinx Doc with Python 3
+
+Same as /usr/bin/sphinx-build but with different interpreter
+
+Got from http://stackoverflow.com/questions/8015225/how-to-force-sphinx-to-use-python-3-x-interpreter
+Usage:
+
+- place this file (executable) in the path
+
+- $ pip3 install -U Sphinx
+
+- change Makefile of your sphinx-doc project. The variable SPHINXBUILD
+    #SPHINXBUILD   = sphinx-build
+    SPHINXBUILD   = sphinx3-build		# for python3
+
+"""
+
+import sys
+
+if __name__ == '__main__':
+    from sphinx import main, make_main
+    if sys.argv[1:2] == ['-M']:
+        sys.exit(make_main(sys.argv))
+    else:
+        sys.exit(main(sys.argv))
