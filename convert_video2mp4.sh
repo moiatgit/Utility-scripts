@@ -8,10 +8,11 @@ do
     extension="${i##*.}"
     if [[ "$extension" == "m4v" || "$extension" == "webm" || "$extension" == "mkv" ]];
     then
-        name=`echo $i | cut -d'.' -f1`;
+        name="${i%.*}"
         if [ ! -f "$name.mp4" ];
         then
-            HandBrakeCLI -i "$i" -o "$name.mp4"
+            echo "Lets go for $name"
+            nice HandBrakeCLI -i "$i" -o "$name.mp4"
         fi
     fi
 done

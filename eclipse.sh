@@ -1,2 +1,2 @@
 #! /bin/sh
-~/soft/eclipse/eclipse &
+~/soft/eclipse/eclipse/eclipse &
