@@ -15,3 +15,5 @@ keycode  57 = n N n N ntilde Ntilde n N
 keycode  52 = z Z z Z less guillemotleft z Z
 keycode  53 = x X x X greater guillemotright x X
 keycode  34 = asciicircum grave bracketleft braceleft bracketleft dead_abovering bracketleft braceleft
+keycode  48 = dead_acute dead_diaeresis dead_acute dead_diaeresis braceleft less braceleft less
+keycode  51 = ccedilla Ccedilla ccedilla Ccedilla braceright greater braceright greater

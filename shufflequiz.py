@@ -1,1 +1,0 @@
-/home/moi/dev/shufflequiz/shufflequiz.py
