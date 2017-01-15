@@ -32,6 +32,11 @@ processa() {
         mkdir -p "$newdir"
         cd "$newdir"
         tar xzvf "$src"
+    elif [[ "$name" == *.tar ]];
+    then
+        mkdir -p "$newdir"
+        cd "$newdir"
+        tar xvf "$src"
     elif [[ "$name" == *.zip ]];
     then
         mkdir -p "$newdir"
