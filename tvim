@@ -1,0 +1,10 @@
+#! /bin/bash
+#
+# This script opens a new terminal and opens a vim edition on $@
+# Assumes $TERMINAL will open at $PWD
+
+TERMINAL=gnome-terminal
+OPTION="-e"
+
+echo $TERMINAL $OPTION "vim -p $*"
+$TERMINAL $OPTION "vim -p $*"
