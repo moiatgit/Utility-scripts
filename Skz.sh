@@ -46,7 +46,8 @@ commit () {
     if [ -d $1 ];
     then
         cd $1
-        find . -type d | grep -v "\.\w" | sed "s/\(.*\)/\"\1\"/g" | xargs git add -A
+        git add --all
+        #find . -type d | grep -v "\.\w" | sed "s/\(.*\)/\"\1\"/g" | xargs git add -A
         git commit -am "$COMMIT_COMMENT" &> "$TMPFILE"
         if [[ ! -n $(grep "nothing to commit (working directory clean)" "$TMPFILE") ]];
         then
