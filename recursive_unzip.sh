@@ -22,6 +22,11 @@ processa() {
         mkdir -p "$newdir"
         cd "$newdir"
         jar xvf "$src"
+    elif [[ "$name" == *.tar.bz2 ]];
+    then
+        mkdir -p "$newdir"
+        cd "$newdir"
+        tar xjvf "$src"
     elif [[ "$name" == *.tar.gz ]];
     then
         mkdir -p "$newdir"
