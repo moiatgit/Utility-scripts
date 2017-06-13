@@ -7,7 +7,7 @@
 # TODO:
 #   1. allow configuring the repository of downloaded bundles as a
 #   different folder from the destination of the extracted contents
-#   2. Allow for confirmation and improve warnings
+#   2. Allow for confirmation and improve warnings (maybe logging)
 #   3. some refactor would be nice! This is poor code and you now it!
 
 import os, re
@@ -16,7 +16,7 @@ import tempfile, shutil
 import json
 import subprocess
 
-_MOODLE_FILE_TEMPL = "(.*?)-(.*?)-(\d+)\.zip"
+_MOODLE_FILE_TEMPL = "(.*?)-(.*?)-(\d+)\.zip$"
 _SUBMISSION_TEMPL  = "(.*?)_(.*?)_assignsubmission_file_(.*)"
 _VALID_CHARS       = "[^a-zA-Z0-9]+"
 _REPLACE_CHAR      = "_"
@@ -77,13 +77,13 @@ def create_exercise_folder_if_missing(course, exercise_name, exercise_id):
     normal_exercise_name = normalize_name(exercise_name)
     path = "%s/%s-%s"%(normal_course, exercise_id, normal_exercise_name)
     if os.path.isdir(path):
-        print("# Folder %s already exists (ignored)"%path)
-        return None
+        print("# WARNING: Folder %s already exists (merged)"%path)
     else:
         os.makedirs(path)
         print("# New folder %s"%path)
         print( "$ mkdir %s"%path)
     return path
+
 
 def process_student_delivery(srcfilename, folder, student_name, internal_code, given_filename):
     normal_filename, fileext = normalize_filename(given_filename)
@@ -91,31 +91,34 @@ def process_student_delivery(srcfilename, folder, student_name, internal_code, g
     path = "%s/%s/%s"%(folder, student_code, internal_code)
 
     if os.path.isdir(path):
-        print("# Delivery for %s already extracted (no changes)"%student_code)
+        print("# WARNING: Delivery for %s already extracted (no changes)"%student_code)
+        return
+
+    if os.path.isdir(srcfilename):
+        print("$ cp -r %s %s"%(srcfilename, path))
+        shutil.copytree(srcfilename, path)
+        return
+
+    print("$ mkdir %s"%path)
+    os.makedirs(path)
+    dstfilename = os.path.join(path, normal_filename)
+    if os.path.isdir(srcfilename):
+        shutil.copytree(srcfilename, dstfilename)
     else:
-        if os.path.isdir(srcfilename):
-            print("$ cp -r %s %s"%(srcfilename, path))
-            shutil.copytree(srcfilename, path)
-        else:
-            print("$ mkdir %s"%path)
-            os.makedirs(path)
-            dstfilename = os.path.join(path, normal_filename)
-            if os.path.isdir(srcfilename):
-                shutil.copytree(srcfilename, dstfilename)
-            else:
-                shutil.copyfile(srcfilename, dstfilename)
-            command = getCompressCommand(srcfilename)
-            if not command == None:
-                prevpath = os.getcwd()
-                os.chdir(path)
-                print( "%s/ $ %s"%(path, command%normal_filename))
-                returnstatus = os.system(command%normal_filename)
-                if returnstatus != 0:
-                    print("ERROR: issuing command %s"%(command%normal_filename))
-                #os.remove(normal_filename)
-                os.chdir(prevpath)
-            else:
-                print("Direct file: %s"%normal_filename)
+        shutil.copyfile(srcfilename, dstfilename)
+    command = getCompressCommand(srcfilename)
+    if not command == None:
+        prevpath = os.getcwd()
+        os.chdir(path)
+        print( "%s/ $ %s"%(path, command%normal_filename))
+        returnstatus = os.system(command%normal_filename)
+        if returnstatus != 0:
+            print("ERROR: issuing command %s"%(command%normal_filename))
+        #os.remove(normal_filename)
+        os.chdir(prevpath)
+    else:
+        print("Direct file: %s"%normal_filename)
+
 
 def process_zip(folder, zipfilename):
     tmppath = tempfile.mkdtemp()
