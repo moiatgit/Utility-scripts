@@ -12,7 +12,7 @@ sincroniza(){
         echo "No està accessible $1"
     else
         cd "$1"
-        for branch in master online;
+        for branch in master online oldstuff dev-cursxml;
         do
             git checkout $branch
             bash gitpull.sh
