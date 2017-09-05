@@ -6,5 +6,5 @@
 TERMINAL=xfce4-terminal
 OPTION="-e"
 
-echo $TERMINAL $OPTION "vim -p $*"
-$TERMINAL $OPTION "vim -p $*"
+echo $TERMINAL $OPTION 'vim -p "$*"'
+$TERMINAL $OPTION "vim -p \"$*\""
