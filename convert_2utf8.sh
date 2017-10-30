@@ -1,6 +1,7 @@
 #! /bin/bash
 #
 # Converteix tots els fitxers del directori actual en utf-8
+
 #
 echo "Recodifica els fitxers que es troben a partir d'aquest directori
 a UTF-8"
@@ -14,8 +15,8 @@ do
     nomdir=`dirname "$f"`
     nomfit=`basename "$f"`
     cd "$nomdir" &> /dev/null
-    file --mime-encoding "$nomfit" | cut --delimiter " " -f 2 > "/tmp/$nomfit.encoding"
-    encoding=`cat /tmp/$nomfit.encoding`
+    file --mime-encoding "$nomfit" | awk '{print $NF}' > "/tmp/$nomfit.encoding"
+    encoding=`cat "/tmp/$nomfit.encoding"`
     if [[ "$encoding" != "utf-8" ]]
     then
         if [ "`iconv -l | grep -i $encoding`" == "" ]
@@ -29,7 +30,7 @@ do
             then
                 if [ $force == "no" ]
                 then
-                    echo "Es convertirà $nomfit de $encoding a utf-8"
+                    echo "Es convertirà $f de $encoding a utf-8"
                     echo "c per convertir, a per convertir tots, s per saltar aquest, x per finalitzar"
                     read resposta
                     if [ "$resposta" == "x" ]
