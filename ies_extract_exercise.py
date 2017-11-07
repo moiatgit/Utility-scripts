@@ -73,9 +73,11 @@ def normalize_filename(name):
     return "%s%s"%(normalize_name(filename), fileext), fileext
 
 def create_exercise_folder_if_missing(course, exercise_name, exercise_id):
+    # XXX Note: exercise_id is not used. It can be removed from params
     normal_course = normalize_name(course)
     normal_exercise_name = normalize_name(exercise_name)
-    path = "%s/%s-%s"%(normal_course, exercise_id, normal_exercise_name)
+    #path = "%s/%s-%s"%(normal_course, exercise_id, normal_exercise_name)
+    path = "%s/%s"%(normal_course, normal_exercise_name)
     if os.path.isdir(path):
         print("# WARNING: Folder %s already exists (merged)"%path)
     else:
