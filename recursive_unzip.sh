@@ -3,14 +3,17 @@
 # Original packages are left there so, subsequent executions of this script will lead the
 # user to deal with the overwritting politics of each uncompressing utility
 #
+# XXX TODO: consider using file --mime-type instead of extension to decide the decompressor
 
 echo "This script will decompress any package from current folder"
 echo "press enter to continue <ctrl>-c to cancel"
 read resposta
 
 processa() {
+    echo "On file $1"
     path=$(dirname $1)
     name=$(basename $1)
+
     extension="${name##*.}"
     src="../$name"
     basedir="$PWD"
