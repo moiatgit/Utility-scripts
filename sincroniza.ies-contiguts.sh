@@ -7,7 +7,6 @@
 
 sincroniza(){
     echo "Sincronització de continguts amb $1"
-    startbranch=`env LANG=en git status | grep "On branch" | cut -d " " -f 3`
     if [ ! -d "$1" ];
     then
         echo "No està accessible $1"
@@ -20,7 +19,6 @@ sincroniza(){
             bash gitpull.sh
             bash gitpush.sh
         done
-        git checkout $startbranch
     fi
 }
 
@@ -34,7 +32,19 @@ then
     exit 1
 fi
 
+
+cd "$local"
+
+if [ -z `LANG=en git status | grep "nothing to commit"` ];
+then
+    echo "El repositori actual no està net. Revisa-ho abans de continuar"
+    exit 1
+fi
+
+
+startbranch=`LANG=en git status | grep "On branch" | cut -d " " -f 3`
 for p in $repositories;
 do
     sincroniza $p
 done
+git checkout $startbranch
