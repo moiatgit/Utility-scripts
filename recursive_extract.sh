@@ -44,6 +44,11 @@ processa() {
         mkdir -p "$newdir"
         cd "$newdir"
         tar xvf "$src"
+    elif [[ "$mimetype" == "application/x-xz" ]]
+    then
+        mkdir -p "$newdir"
+        cd "$newdir"
+        tar xJvf "$src"
     elif [[ "$mimetype" == "application/zip" ]]
     then
         mkdir -p "$newdir"
