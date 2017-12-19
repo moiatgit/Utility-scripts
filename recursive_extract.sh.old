@@ -10,27 +10,13 @@ echo "This script will decompress any package from current folder"
 echo "press enter to continue <ctrl>-c to cancel"
 read resposta
 
-extract() {
-    # checks whether the folder $1 already exists. If not, it creates it
-    # and extracts $3 file with $2 command inside the new folder
-    newdir=$1
-    command=$2
-    src=$3
-    if [ -d "$newdir" ];
-    then
-        echo "Folder $newdir already exists: no action"
-    else
-        mkdir -p "$newdir"
-        cd "$newdir"
-        eval $command \"$src\"
-    fi
-}
-
 processa() {
+    echo "On file $1"
     path=$(dirname $1)
     name=$(basename $1)
 
     mimetype=`file --mime-type "$1" | rev | cut -d ':' -f 1 | rev | tr -d [:space:]`
+    echo "XXX $mimetype"
 
     extension="${name##*.}"
     src="../$name"
@@ -38,35 +24,46 @@ processa() {
     newdir="$name.files"
 
     cd "$path"
-    command=""
     if [[ "$mimetype" == "application/java-archive" ]]
     then
-        command="jar xvf"
+        mkdir -p "$newdir"
+        cd "$newdir"
+        jar xvf "$src"
     elif [[ "$mimetype" == "application/x-bzip2" ]]
     then
-        command="tar xjvf"
+        mkdir -p "$newdir"
+        cd "$newdir"
+        tar xjvf "$src"
     elif [[ "$mimetype" == "application/gzip" ]]
     then
-        command="tar xzvf"
+        mkdir -p "$newdir"
+        cd "$newdir"
+        tar xzvf "$src"
     elif [[ "$mimetype" == "application/x-tar" ]]
     then
-        command="tar xvf"
+        mkdir -p "$newdir"
+        cd "$newdir"
+        tar xvf "$src"
     elif [[ "$mimetype" == "application/x-xz" ]]
     then
-        command="tar xJvf"
+        mkdir -p "$newdir"
+        cd "$newdir"
+        tar xJvf "$src"
     elif [[ "$mimetype" == "application/zip" ]]
     then
-        command="jar xvf"
+        mkdir -p "$newdir"
+        cd "$newdir"
+        jar xvf "$src"
     elif [[ "$mimetype" == "application/x-rar" ]]
     then
-        command="unrar x"
+        mkdir -p "$newdir"
+        cd "$newdir"
+        unrar x "$src"
     elif [[ "$mimetype" == "application/x-7z-compressed" ]]
     then
-        command="7za e"
-    fi
-    if [[ -n $command ]];
-    then
-        extract $newdir $command $src
+        mkdir -p "$newdir"
+        cd "$newdir"
+        7za e "$src"
     fi
 
     cd "$basedir"
