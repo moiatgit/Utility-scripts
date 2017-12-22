@@ -35,7 +35,7 @@ fi
 
 cd "$local"
 
-if [ -z `LANG=en git status | grep "nothing to commit"` ];
+if [ -z "`LANG=en git status | grep 'nothing to commit'`" ];
 then
     echo "El repositori actual no està net. Revisa-ho abans de continuar"
     exit 1
