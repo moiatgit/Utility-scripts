@@ -5,10 +5,14 @@
 # Original packages are left there so, subsequent executions of this script will lead the
 # user to deal with the overwritting politics of each uncompressing utility
 #
-
-echo "This script will decompress any package from current folder"
-echo "press enter to continue <ctrl>-c to cancel"
-read resposta
+# TODO: add capability to extract again in case $rename_option=1 and once
+# extracted, a package contained further packages! It could be performed
+# by iterative execution (i.e. a loop) and a counter of the number of
+# packages extracted in each iteration, until the counter gets 0
+#
+interactive_option=1    # the script is running interactively. i.e. It will prompt the user
+                        # When not in interactive mode, it won't prompt and rename option will be set
+rename_option=0
 
 extract() {
     # checks whether the folder $1 already exists. If not, it creates it
@@ -18,11 +22,15 @@ extract() {
     src=$3
     if [ -d "$newdir" ];
     then
-        echo "Folder $newdir already exists: no action"
+        echo "Folder `pwd`/$newdir already exists: no action"
     else
         mkdir -p "$newdir"
         cd "$newdir"
         eval $command \"$src\"
+        if [[ "$rename_option" == 1 ]];
+        then
+            mv "$src" "$src.decompressed"
+        fi
     fi
 }
 
@@ -72,13 +80,31 @@ processa() {
     cd "$basedir"
 }
 
+if [[ "$1" == "-I" ]];
+then
+    interactive_option=1
+    rename_option=1
+else 
+    echo "This script will decompress any package from current folder"
+    if [[ "$1" == "-r" ]];
+    then
+        rename_option=1
+    else
+        echo "Running with option -r, it will rename the original packages with the suffix .decompressed"
+    fi
+    echo "press enter to continue <ctrl>-c to cancel"
+    read resposta
+fi
+
 SAVEIFS=$IFS
 IFS=$(echo -en "\n\b")
-#files=`find . -type f \( -name '*.zip' -o -name '*.tar.gz' -o -name '*.jar' \)`
 files=`find . -type f`
 for f in $files;
 do
-    processa "$f"
+    if [[ "${f##*.}" != "decompressed" ]];
+    then
+        processa "$f"
+    fi
 done
 IFS=$SAVEIFS
 
