@@ -30,4 +30,4 @@ keycode 108 = ISO_Level3_Shift NoSymbol ISO_Level3_Shift
 keycode 132 = at bar EuroSign bar
 keycode 133 = Super_L NoSymbol Super_L
 keycode 135 = Menu NoSymbol Menu
-
+keycode  60 = period colon period colon U2026 division periodcentered division period greater

@@ -18,3 +18,4 @@ keycode  52 = z Z z Z less guillemotleft less guillemotleft
 keycode  53 = x X x X greater guillemotright greater guillemotright
 keycode  54 = c C c C ccedilla Ccedilla ccedilla Ccedilla
 keycode  57 = n N n N ntilde Ntilde ntilde Ntilde
+keycode  60 = period colon period colon U2026 division periodcentered division period greater
