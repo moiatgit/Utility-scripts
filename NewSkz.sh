@@ -5,9 +5,9 @@
 # Tries to sincronize current git repository for all its branches
 # branches to all its remotes
 
-# Place a file .skz_«remotename» in the branches you are interested to
-# sync for each remote name
-# run this script on the corresponding folder and… you're done
+# Place a file .skz_«remotename» in the root directory of a git repository
+# for the branches you are interested in syncing for each remote name
+# Run this script on the corresponding folder and… you're done
 # The script will sync each branch of each remote marked with the
 # corresponding file.
 
@@ -23,6 +23,7 @@ LANG=en_US.UTF-8 git status &> /dev/null || error "Not a git repository"
 
 [[ "`LANG=en_US.UTF-8 git status | grep -c 'Changes'`" == 0 ]] || error "Changes not staged for commit"
 
+rootfolder=`git rev-parse --show-toplevel`
 remotes=`git remote`
 for remote in $remotes;
 do
@@ -47,7 +48,7 @@ do
     echo; echo "Syncing remote $remote"
     branches=`git for-each-ref --format='%(refname:short)' | grep -v \/`
     startbranch=`LANG=en git status | grep "On branch" | cut -d " " -f 3`
-    filemark=".skz_$remote"
+    filemark="$rootfolder/.skz_$remote"
     for branch in $branches;
     do
         git checkout $branch &> /dev/null
@@ -61,5 +62,5 @@ do
         git push $remote $branch || error "Problems pushing repo $repo branch $branch"
     done
     git checkout $startbranch &> /dev/null
-    
+
 done
