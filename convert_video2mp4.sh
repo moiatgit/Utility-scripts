@@ -6,7 +6,7 @@ echo "This script converts videos in current folder into mp4"
 for i in *;
 do
     extension="${i##*.}"
-    if [[ "$extension" == "m4v" || "$extension" == "webm" || "$extension" == "mkv" ]];
+    if [[ "$extension" == "m4v" || "$extension" == "webm" || "$extension" == "mkv" || "$extension" == "m4v" || "$extension" == "mov" ]];
     then
         name="${i%.*}"
         if [ ! -f "$name.mp4" ];
