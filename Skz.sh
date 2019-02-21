@@ -27,6 +27,10 @@
 # performed on this repository.
 #
 # TODO: add robustness and config flexibility
+#   Consider this to simplify all this script
+#   It should just check whether each remote is accessible before trying
+#   $ git remote | xargs -L1 git push --all
+#   $ git remote -v | grep '(fetch)' | cut -d @ -f 2 | cut -d : -f 1
 #
 source ~/.Skz
 

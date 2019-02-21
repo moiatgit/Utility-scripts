@@ -6,7 +6,7 @@
 # branches to all its remotes
 
 echo "This script is under development"
-exit 1
+#exit 1
 
 error() { echo "ERROR: $1" >&2; exit 1; }
 
@@ -17,7 +17,7 @@ LANG=en_US.UTF-8 git status &> /dev/null || error "Not a git repository"
 
 # Is this repo dirty? (there are uncommited changes?)
 
-[[ "`LANG=en_US.UTF-8 git status | grep -c 'Changes not staged for commit'`" == 0 ]] || error "Changes not staged for commit"
+[[ "`LANG=en_US.UTF-8 git status | grep -c 'Changes'`" == 0 ]] || error "Changes not staged for commit"
 
 remotes=`git remote`
 for remote in $remotes;
@@ -40,15 +40,22 @@ do
             continue
         fi
     fi
-    echo "Remote $remote is available"
+    echo; echo "Syncing remote $remote"
+    branches=`git for-each-ref --format='%(refname:short)' | grep -v \/`
+    startbranch=`LANG=en git status | grep "On branch" | cut -d " " -f 3`
+    filemark=".skz_$remote"
+    for branch in $branches;
+    do
+        git checkout $branch &> /dev/null
+        if [ ! -f "$filemark" ];
+        then
+            echo "Ignoring branch $branch"
+            continue
+        fi
+        echo "Syncing branch $branch"
+        git pull $remote $branch || error "Problems pulling repo $repo branch $branch"
+        git push $remote $branch || error "Problems pushing repo $repo branch $branch"
+    done
+    git checkout $startbranch &> /dev/null
+    
 done
-# for each remote in this repository
-#   check if remote contains @ -> a net remote
-#       check if net remote is accessible (ping)
-#   otherwise -> a mounted remote
-#       check if mounted remote is accessible (folder exists)
-#   In case a remote is available:
-#       fetch all branches
-#       push all branches
-#
-
