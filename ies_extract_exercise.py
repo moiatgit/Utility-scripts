@@ -100,6 +100,8 @@ def create_exercise_folder_if_missing(course, exercise_name):
 def process_student_delivery(srcfilename, folder, student_name, internal_code, given_filename):
     normal_filename, fileext = normalize_filename(given_filename)
     student_code = _STUDENT_NAME_CONVERSION.get(student_name, normalize_name(student_name))
+    logging.info("Mapping student name %s to student code %s"%(student_name,
+                                                               student_code))
     path = "%s/%s/%s"%(folder, student_code, internal_code)
 
     if os.path.isdir(path):
