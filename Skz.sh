@@ -26,11 +26,9 @@
 #
 # performed on this repository.
 #
-# TODO: add robustness and config flexibility
-#   Consider this to simplify all this script
-#   It should just check whether each remote is accessible before trying
-#   $ git remote | xargs -L1 git push --all
-#   $ git remote -v | grep '(fetch)' | cut -d @ -f 2 | cut -d : -f 1
+# TODO: use NewSkz to perform the actual syncing.
+#   This script should be reprogrammed so it adds all the changes in the
+#   repository and then calls NewSkz.sh to finish the work
 #
 source ~/.Skz
 

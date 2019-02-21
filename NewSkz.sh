@@ -11,6 +11,13 @@
 # The script will sync each branch of each remote marked with the
 # corresponding file.
 
+# TODO: current version presents the following problem when the repo has more
+# than one remote. It pull-pushes the contents of each repo in the order given
+# by ``git remote`` so it is possible that the contents of the repo changes with
+# the second sync but the first remote won't know them until a new execution is
+# performed.
+# It could be soved by first pulling from all the remotes and then pushing
+
 
 error() { echo "ERROR: $1" >&2; exit 1; }
 
