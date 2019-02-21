@@ -5,8 +5,12 @@
 # Tries to sincronize current git repository for all its branches
 # branches to all its remotes
 
-echo "This script is under development"
-#exit 1
+# Place a file .skz_«remotename» in the branches you are interested to
+# sync for each remote name
+# run this script on the corresponding folder and… you're done
+# The script will sync each branch of each remote marked with the
+# corresponding file.
+
 
 error() { echo "ERROR: $1" >&2; exit 1; }
 
