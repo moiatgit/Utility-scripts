@@ -1,11 +1,11 @@
-#! /usr/bin/python
+#! /usr/bin/python3
 # -*- coding: utf-8 -*-
 #
 # Fichero:  cerca_iguals.py
 # Autor:    moises
 # Fecha:    20070823
 # Descr:    Compara tots els fitxers a partir del directori actual (incloent subdirectoris)
-#           Escriu per sortida estandard la llista dels fitxers amb mateix contingut en parells separats per ;
+#           Escriu per sortida estandard la llista dels fitxers amb mateix contingut en parells separats per |
 #           Escriu la llista de directoris que contenen algun fitxer repetit, amb el % de repetits que conté
 # Ús:       Des del directori a comparar, executar el programa
 
@@ -26,10 +26,10 @@ def compara_fitxer_lst(f, lst):
     res = ""
     for cf in lst:
         if filecmp.cmp(f, cf):
-            fd = open(f)
-            cfd = open(cf)
-            vf = fd.read(10000);        # només compara els primers 10Kb
-            vcf = cfd.read(10000);
+            fd = open(f, 'rb')
+            cfd = open(cf, 'rb')
+            vf = fd.read(10000)        # només compara els primers 10Kb
+            vcf = cfd.read(10000)
             fd.close()
             cfd.close()
             if (vf == vcf):
@@ -49,13 +49,13 @@ def carrega_fitxer(f):
     nf += 1
     mida = os.stat(f)[6]
     mt += mida
-    if dicM.has_key(mida):
+    if mida in dicM:
         feq = compara_fitxer_lst(f, dicM[mida])
         if feq == "":       # no hi ha cap fitxer igual
             dicM[mida].append(f)
         else:               # hi ha un fitxer igual
             mr += mida
-            if dicF.has_key(feq):   # hi ha més d'un fitxer igual
+            if feq in dicF:   # hi ha més d'un fitxer igual
                 registra_repetit_a_directori(os.path.dirname(f))
                 dicF[feq].append(f)
             else:                   # és el primer igual
@@ -67,6 +67,7 @@ def carrega_fitxer(f):
 
 def carrega_fitxers(d):
     """ carrega els fitxers del directori d als diccionaris de fitxers """
+    print("Carregant directory %s" % d)
     for f in os.listdir(d):
         fc = os.path.join(d,f)
         if os.path.isdir(fc):
@@ -77,38 +78,39 @@ def carrega_fitxers(d):
 def registra_repetit_a_directori(d):
     """ registra un nou repetit al directori d """
     global dicD
-    if dicD.has_key(d):     # ja tenia repetits
+    if d in dicD:     # ja tenia repetits
         dicD[d]=dicD[d]+1
     else:
         dicD[d]=1
 
 def mostra_iguals():
-    """ mostra la llista de parells de fitxers que s'han trobat iguals """
+    """ mostra la llista de fitxers que s'han trobat iguals """
     global dicF
     for f in dicF.keys():
-        for feq in dicF[f]:
-            print "%s; %s"%(f, feq)
+        print("equals %s | %s" % (f, " | ".join(dicF[f])))
 
 def mostra_dir_iguals():
     """ mostra els directoris que contenen fitxers repetits """
     global dicD
-    for d in dicD.keys():
-        nfitxers = len(os.walk(d).next()[2])    # compta el nombre total de fitxers al directori
-        print d, "%s repetits de %s fitxers = %1.1f%%"%(dicD[d], nfitxers, (100.0 * dicD[d] / nfitxers) )
+    for d in dicD:
+        #nfitxers = len([n for n in os.listdir(d) if os.path.isfile(n)])   # compta el nombre total de fitxers al directori
+        nfitxers = len(os.listdir(d))
+        percent = 0 if nfitxers == 0 else (100.0 * dicD[d] / nfitxers)
+        print(d, "%s repetits de %s fitxers = %1.1f%%" % (dicD[d], nfitxers, percent))
 
 def mostra_resum():
     """ mostra un resum estadistic """
     global nf
     global mt
     global mr
-    print "Nombre total de fitxers tractats: %s" %nf
-    print "Mida total dels fitxers tractats: %s" %mt
-    print "Mida total dels fitxers repetits: %s (%1.2f%%)" %(mr, (100.0 * mr/mt))
+    print("Nombre total de fitxers tractats: %s" % nf)
+    print("Mida total dels fitxers tractats: %s" % mt)
+    print("Mida total dels fitxers repetits: %s (%1.2f%%)" % (mr, (100.0 * mr/mt)))
 
 carrega_fitxers(os.getcwd())
-print "==============================="
+print("===============================")
 mostra_iguals()
-print "==============================="
+print("===============================")
 mostra_dir_iguals()
-print "==============================="
+print("===============================")
 mostra_resum()
