@@ -21,8 +21,6 @@
 
 error() { echo "ERROR: $1" >&2; exit 1; }
 
-GITCOMMAND="LANG=en_US.UTF-8 git"
-
 # Is $PDW a git repository?
 LANG=en_US.UTF-8 git status &> /dev/null || error "Not a git repository"
 
