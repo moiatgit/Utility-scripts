@@ -21,12 +21,44 @@
 
 error() { echo "ERROR: $1" >&2; exit 1; }
 
+# check commandline arguments
+commit_first=0      # add all changes and commit first
+
+for option in "$@"
+do
+    case "$option" in
+
+        "-h") echo "Usage: $0 [-h | [-c [comment]]]"
+              echo "-h: displays this help and exits"
+              echo "-c: add any change in current branch and commits with comment"
+              exit 0
+            ;;
+
+        "-c") commit_first=1
+              commit_comment="`date`"
+            ;;
+
+        *) if [ "$commit_first" -eq 1 ];
+           then
+               commit_comment="$option"
+           else
+               error "Invalid option $option. Use -h for help"
+           fi
+    esac
+done
+
 # Is $PDW a git repository?
 LANG=en_US.UTF-8 git status &> /dev/null || error "Not a git repository"
 
 # Is this repo dirty? (there are uncommited changes?)
+if [ "$commit_first" -eq 1 ];
+then
+    git add --all
+    git commit -am "$commit_comment"
+else
+    [[ "`LANG=en_US.UTF-8 git status | grep -c 'Changes'`" == 0 ]] || error "Changes not staged for commit"
+fi
 
-[[ "`LANG=en_US.UTF-8 git status | grep -c 'Changes'`" == 0 ]] || error "Changes not staged for commit"
 
 rootfolder=`git rev-parse --show-toplevel`
 remotes=`git remote`
