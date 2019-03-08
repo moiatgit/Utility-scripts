@@ -11,6 +11,9 @@
 # The script will sync each branch of each remote marked with the
 # corresponding file.
 
+# TODO: small improvement: allow args specifying the repo so this script cd on
+# this repo.
+
 # TODO: current version presents the following problem when the repo has more
 # than one remote. It pull-pushes the contents of each repo in the order given
 # by ``git remote`` so it is possible that the contents of the repo changes with
