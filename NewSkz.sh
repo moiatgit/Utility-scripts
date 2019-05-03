@@ -8,6 +8,7 @@
 # Place a file .skz_«remotename» in the root directory of a git repository
 # for the branches you are interested in syncing for each remote name
 # Run this script on the corresponding folder and… you're done
+
 # The script will sync each branch of each remote marked with the
 # corresponding file.
 
@@ -20,6 +21,10 @@
 # the second sync but the first remote won't know them until a new execution is
 # performed.
 # It could be soved by first pulling from all the remotes and then pushing
+
+# TODO: current version has a problem: when there's a warning on branch
+# change (e.g. there're some files in a non registered folder that can be
+# removed) the branch simply gets unsynced
 
 
 error() { echo "ERROR: $1" >&2; exit 1; }
