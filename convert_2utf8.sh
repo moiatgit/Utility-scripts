@@ -3,8 +3,8 @@
 # Converteix tots els fitxers del directori actual en utf-8
 
 #
-echo "Recodifica els fitxers que es troben a partir d'aquest directori
-a UTF-8"
+echo "Recodifica els fitxers que es troben a partir d'aquest directori a UTF-8"
+defaultencoding=cp1252
 force="no"
 oldIFS=$IFS
 IFS=$'\n'       # change field separator
@@ -21,33 +21,33 @@ do
     then
         if [ "`iconv -l | grep -i $encoding`" == "" ]
         then
-            echo "No es coneix $encoding per $nomfit"
-            doconvert="no"
-        else
-            iconv -f "$encoding" -t utf-8 "$nomfit" > "/tmp/$nomfit.tmp"
-            diff "$nomfit" "/tmp/$nomfit.tmp" > "/tmp/$nomfit.diff"
-            if [[ -s "/tmp/$nomfit.diff" ]]
+            echo "No es coneix $encoding per $nomfit. Es suposarà $defaultencoding"
+            #doconvert="no"
+            encoding=$defaultencoding
+        fi
+        iconv -f "$encoding" -t utf-8 "$nomfit" > "/tmp/$nomfit.tmp"
+        diff "$nomfit" "/tmp/$nomfit.tmp" > "/tmp/$nomfit.diff"
+        if [[ -s "/tmp/$nomfit.diff" ]]
+        then
+            if [ $force == "no" ]
             then
-                if [ $force == "no" ]
+                echo "Es convertirà $f de $encoding a utf-8"
+                echo "c per convertir, a per convertir tots, s per saltar aquest, x per finalitzar"
+                read resposta
+                if [ "$resposta" == "x" ]
                 then
-                    echo "Es convertirà $f de $encoding a utf-8"
-                    echo "c per convertir, a per convertir tots, s per saltar aquest, x per finalitzar"
-                    read resposta
-                    if [ "$resposta" == "x" ]
-                    then
-                        exit
-                    fi
-                    if [ "$resposta" == "a" ]
-                    then
-                        force="yes"
-                        doconvert="yes"
-                    elif [ "$resposta" == "c" ]
-                    then
-                        doconvert="yes"
-                    fi
-                else
+                    exit
+                fi
+                if [ "$resposta" == "a" ]
+                then
+                    force="yes"
+                    doconvert="yes"
+                elif [ "$resposta" == "c" ]
+                then
                     doconvert="yes"
                 fi
+            else
+                doconvert="yes"
             fi
         fi
         if [ $doconvert == "yes" ]
