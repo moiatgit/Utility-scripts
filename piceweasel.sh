@@ -1,2 +1,2 @@
 #! /bin/sh
-firefox --private-window
+firefox --private-window $1

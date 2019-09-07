@@ -69,6 +69,8 @@ fi
 
 
 rootfolder=`git rev-parse --show-toplevel`
+cd "$rootfolder"
+
 remotes=`git remote`
 for remote in $remotes;
 do

@@ -1,5 +1,5 @@
 #! /bin/sh
-echo "sudo apt-get update"
+echo "sudo apt update"
 sudo apt-get update
 if [ "$?" ];
 then
@@ -7,7 +7,7 @@ then
     read resp
     if [ "$resp" = "c" ];
     then
-        echo "sudo apt-get upgrade"
+        echo "sudo apt upgrade"
         sudo apt-get upgrade
     else
         echo "Not upgraded"
