@@ -26,6 +26,8 @@
 # change (e.g. there're some files in a non registered folder that can be
 # removed) the branch simply gets unsynced
 
+# TODO: allow NeoSyncing from any subfolder of a repo
+
 
 error() { echo "ERROR: $1" >&2; exit 1; }
 
