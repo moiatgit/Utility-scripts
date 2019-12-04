@@ -26,3 +26,4 @@ sudo apt install python3-tk
 #gsettings set org.gnome.shell.app-switcher current-workspace-only true
 
 
+sudo apt install libcanberra-gtk-module
