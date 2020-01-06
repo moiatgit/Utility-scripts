@@ -7,6 +7,12 @@ default_size="1G"
 default_location=/tmp/ramdisk
 size=${1:-$default_size}
 location=${2:-$default_location}
+label=myramdisk
+if [[ "`mount -l | grep $label`" != "" ]];
+then
+    echo "RAM disk $label already mounted. No action performed."
+    exit 0
+fi
 echo "Usage: $0 [size [location]]"
 echo "This script will mount a RAM disk of $size on $location"
 echo "press enter to continue <ctrl>-c to cancel"
