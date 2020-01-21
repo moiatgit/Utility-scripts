@@ -14,6 +14,7 @@ libnss3-dev libssl-dev libreadline-dev libffi-dev wget
 sudo apt install libsqlite3-dev
 sudo apt install libbz2-dev
 sudo apt install python3-tk
+sudo apt install tk tk-dev
 
 #if [ ! -d $HOME/bin ];
 #then
