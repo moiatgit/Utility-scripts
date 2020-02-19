@@ -13,8 +13,7 @@ sudo apt install build-essential zlib1g-dev libncurses5-dev libgdm-dev
 libnss3-dev libssl-dev libreadline-dev libffi-dev wget
 sudo apt install libsqlite3-dev
 sudo apt install libbz2-dev
-sudo apt install python3-tk
-sudo apt install tk tk-dev
+sudo apt install python3-tk tk tk-dev libffi-dev
 
 #if [ ! -d $HOME/bin ];
 #then

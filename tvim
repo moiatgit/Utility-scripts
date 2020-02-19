@@ -3,8 +3,8 @@
 # This script opens a new terminal and opens a vim edition on $@
 # Assumes $TERMINAL will open at $PWD
 
-TERMINAL=xfce4-terminal
+TERMINAL=gnome-terminal     # xfce4-terminal
 OPTION="-e"
 
-echo $TERMINAL $OPTION 'vim -p "$*"'
-$TERMINAL $OPTION "vim -p \"$*\""
+echo $TERMINAL $OPTION 'nvim -p "$*"'
+$TERMINAL $OPTION "nvim -p \"$*\""
