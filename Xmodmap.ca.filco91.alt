@@ -21,6 +21,7 @@ keycode  54 = c C c C ccedilla Ccedilla ccedilla Ccedilla
 keycode  57 = n N n N ntilde Ntilde ntilde Ntilde
 keycode  59 = comma semicolon comma semicolon less multiply less multiply comma less comma less
 keycode  60 = period colon period colon greater U2026 greater U2026
+keycode  61 = minus underscore slash question U2014 U2013
 keycode  64 = Alt_L Meta_L Alt_L Meta_L Alt_L Meta_L Alt_L Meta_L
 keycode  65 = space NoSymbol space
 keycode  97 = backslash underscore backslash underscore
