@@ -4,7 +4,6 @@
 # Assumes $TERMINAL will open at $PWD
 
 TERMINAL=gnome-terminal     # xfce4-terminal
-OPTION="-e"
+OPTION="-q"
 
-echo $TERMINAL $OPTION 'nvim -p "$*"'
-$TERMINAL $OPTION "nvim -p \"$*\""
+$TERMINAL $OPTION -- nvim -p "$*"
