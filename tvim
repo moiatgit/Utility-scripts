@@ -7,8 +7,13 @@ vimflavor=nvim
 
 TERMINAL=gnome-terminal     # xfce4-terminal
 
-#OPTION="-e"
-#$TERMINAL $OPTION "vim -p \"$*\""
+version5=$(LANG=en bash --version | grep "GNU bash, version 5")
+if [ -z "$version5" ];
+then
+    $TERMINAL -e "$vimflavor -p \"$*\""
+else
+    OPTION="-q"
+    $TERMINAL $OPTION -- $vimflavor -p "$*"
+fi
 
-OPTION="-q"
-$TERMINAL $OPTION -- $vimflavor -p "$*"
+
