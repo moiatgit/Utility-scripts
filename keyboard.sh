@@ -1,6 +1,9 @@
 #! /bin/bash
 echo "Key remapping"
-if [[ "$1" == en ]];
+if [ -f "$HOME/.keymap.xkb" ];
+then
+    xkbcomp "$HOME/.keymap.xkb" $DISPLAY
+elif [[ "$1" == en ]];
 then
     echo "Mapping en filco91"
     xmodmap $HOME/bin/Xmodmap.en.filco91
