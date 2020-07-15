@@ -2,160 +2,111 @@
 #
 # Synchronization script
 #
-# tries to synchronize local repository with its pen's counterpart
-# It adds also the possiblity to just backup (JBK) without expecting
-# changes in destination repository
-#
-# It accepts one or more pendrives and jbk
-# It accepts one or more repositories. By now all them must be stored
-# at the same base dir.
-#
-# ~/.Skz should contain configuration in the following format:
-#    LOCAL_BASE="«path to local base of repositories"
-#    PEN_BASE=("«path to one pendrive's base»" "«path to another pendrive's #    base»")
-#    LOCAL_NAME=«host name rep»
-#    PEN_NAME=("«pen1 name rep»" "«pen2 name rep»")
-#    REPOS=("«path to repo1»" "«path to repo 2»")
-# When pen name repository starts with -- Skz treats as JBK and no commit is
-#    Optionally you can add the following variables on the
-#    configuration file in order to allow syncing on a bare repository
-#
-#    BARE_NAME=«name of the bare repo»
-#    BARE_URL=«url of the bare repo»
-#
-#
-# performed on this repository.
-#
-# TODO: use NewSkz to perform the actual syncing.
-#   This script should be reprogrammed so it adds all the changes in the
-#   repository and then calls NewSkz.sh to finish the work
-#
-source ~/.Skz
+# Tries to sincronize current git repository for all its branches
+# branches to all its remotes
 
-#
-if [ -z "$1" ];
-then
-    COMMIT_COMMENT="`date`"
-else
-    COMMIT_COMMENT="$1"
-fi
+# Place a file .skz_«remotename» in the root directory of a git repository
+# for the branches you are interested in syncing for each remote name
+# Run this script on the corresponding folder and… you're done
 
-TMPFILE="/tmp/Skz_`date`.$RANDOM"
-#
-commit () {
-    # commits on path $1 with name $2 if exists
-    # it recursively adds all the possible changes to the repository
-    if [ -d $1 ];
-    then
-        cd $1
-        git add --all
-        #find . -type d | grep -v "\.\w" | sed "s/\(.*\)/\"\1\"/g" | xargs git add -A
-        git commit -am "$COMMIT_COMMENT" &> "$TMPFILE"
-        if [[ ! -n $(grep "nothing to commit (working directory clean)" "$TMPFILE") ]];
-        then
-            echo "··· Commit on $2"
-            cat "$TMPFILE"
-        else
-            echo "... Commit on $2: no changes"
-        fi
-    fi
-}
+# The script will sync each branch of each remote marked with the
+# corresponding file.
 
-gitpull () {
-    # pulls from $1 directory with repo name $2 to $3
-    cd "$1"
-    git pull "$2" master &> "$TMPFILE"
-    if [[ ! -n $(grep "Already up-to-date." "$TMPFILE") ]];
-    then
-        echo "··· Pulling from $2 to $3"
-        cat "$TMPFILE"
-    else
-        echo "... Pulling from $2 to $3: no changes"
-    fi
-}
+# TODO: small improvement: allow args specifying the repo so this script cd on
+# this repo.
 
-gitpush () {
-    # pushes from repo $2 to $1 directory with name $3
-    cd "$1"
-    git push "$2" master &> "$TMPFILE"
-    if [[ ! -n $(grep "Everything up-to-date" "$TMPFILE") ]];
-    then
-        echo "··· Pushing from $3 to $2"
-        cat "$TMPFILE"
-    else
-        echo "... Pushing from $3 to $2: no changes"
-    fi
-}
-#
-# Determine if it has to sync with a bare repo
-if [ ! -z $BARE_NAME ]
-then
-    BARE_SYNC=1
-fi
+# TODO: current version presents the following problem when the repo has more
+# than one remote. It pull-pushes the contents of each repo in the order given
+# by ``git remote`` so it is possible that the contents of the repo changes with
+# the second sync but the first remote won't know them until a new execution is
+# performed.
+# It could be soved by first pulling from all the remotes and then pushing
 
-if [ ! -z $BARE_URL ] && [ ! -z $BARE_SYNC ]
-then
-    printf "Checking $BARE_URL for bare $BARE_NAME: "
-    ping -w 1 -c 1 $BARE_URL > /dev/null
-    if [ ! $? -eq 0 ]
-    then
-        BARE_SYNC=
-        printf "Not present\n"
-    else
-        printf "Done\n"
-    fi
-fi
-#
-num_repos=${#REPOS[@]}
-r=0
-while [ "$r" -lt "$num_repos" ];
+# TODO: current version has a problem: when there's a warning on branch
+# change (e.g. there're some files in a non registered folder that can be
+# removed) the branch simply gets unsynced
+
+error() { echo "ERROR: $1" >&2; exit 1; }
+
+# check commandline arguments
+commit_first=0      # add all changes and commit first
+
+for option in "$@"
 do
-    repo=${REPOS[$r]}
-    LOCAL="$LOCAL_BASE/$repo"
-    #
-    if [ -d $LOCAL ];
-    then
-        echo "Syncing repository $repo"
-        #
-        if [ ! -z $BARE_SYNC ]
-        then
-            gitpull $LOCAL $BARE_NAME $LOCAL_NAME
-        fi
-        #
-        commit $LOCAL $LOCAL_NAME
-        num_pen=${#PEN_BASE[@]}
-        num_pen_name=${#PEN_NAME[@]}
-        if [ "$num_pen" -ne "$num_pen_name" ];
-        then
-            echo "ERROR: PEN and PEN_NAME length's must match"
-            exit 1
-        fi
-        #
-        i=0
-        while [ "$i" -lt "$num_pen" ];
-        do
-            pen_path="${PEN_BASE[$i]}/$repo"
-            if [ -d "$pen_path" ];
-            then
-                rep_name=${PEN_NAME[$i]}
-                if [[ $rep_name == "--"* ]]; # check whether it is a just backup rep (JBR)
-                then
-                    rep_name=${rep_name:2}  # extract -- from repository name
-                else
-                    commit $pen_path $rep_name
-                    gitpull "$LOCAL" "$rep_name" "$LOCAL_NAME"
-                fi
-                gitpull "$pen_path" "$LOCAL_NAME" "$rep_name"
-            fi
-            let "i++"
-        done
-        #
-        if [ ! -z $BARE_SYNC ]
-        then
-            gitpush $LOCAL $BARE_NAME $LOCAL_NAME
-        fi
-    fi
-    #
-    let "r++"
+    case "$option" in
+
+        "-h") echo "Usage: $0 [-h | [-c [comment]]]"
+              echo "-h: displays this help and exits"
+              echo "-c: add any change in current branch and commits with comment"
+              exit 0
+            ;;
+
+        "-c") commit_first=1
+              commit_comment="`date`"
+            ;;
+
+        *) if [ "$commit_first" -eq 1 ];
+           then
+               commit_comment="$option"
+           else
+               error "Invalid option $option. Use -h for help"
+           fi
+    esac
 done
 
+# Is $PDW a git repository?
+LANG=en_US.UTF-8 git status &> /dev/null || error "Not a git repository"
+
+# Is this repo dirty? (there are uncommited changes?)
+if [ "$commit_first" -eq 1 ];
+then
+    git add --all
+    git commit -am "$commit_comment"
+else
+    [[ "`LANG=en_US.UTF-8 git status | grep -c 'Changes'`" == 0 ]] || error "Changes not staged for commit"
+fi
+
+
+rootfolder=`git rev-parse --show-toplevel`
+cd "$rootfolder"
+
+remotes=`git remote`
+for remote in $remotes;
+do
+    remotehost=`git remote -v | grep $remote | grep '@' | cut -d @ -f 2 | cut -d \  -f 1  | cut -d : -f 1 | sort | uniq`
+    if [ -n "$remotehost" ];
+    then
+        echo "pinging to $remotehost …"
+        ping -w 1 -c 1 $remotehost &> /dev/null
+        if [ ! $? -eq 0 ]
+        then
+            echo "$remote on $remotehost is not available"
+            continue
+        fi
+    else
+        mountpoint=`git remote -v | grep $remote | cut -d \  -f 1 | cut -f 2 | sort | uniq`
+        if [ ! -d $mountpoint ];
+        then
+            echo "$remote on $mountpoint is not mounted"
+            continue
+        fi
+    fi
+    echo; echo "Syncing remote $remote"
+    branches=`git for-each-ref --format='%(refname:short)' | grep -v \/`
+    startbranch=`LANG=en git status | grep "On branch" | cut -d " " -f 3`
+    filemark="$rootfolder/.skz_$remote"
+    for branch in $branches;
+    do
+        git checkout $branch &> /dev/null
+        if [ ! -f "$filemark" ];
+        then
+            echo "Ignoring branch $branch"
+            continue
+        fi
+        echo "Syncing branch $branch"
+        git pull $remote $branch || error "Problems pulling repo $repo branch $branch"
+        git push $remote $branch || error "Problems pushing repo $repo branch $branch"
+    done
+    git checkout $startbranch &> /dev/null
+
+done
