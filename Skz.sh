@@ -92,7 +92,7 @@ do
         fi
     fi
     echo; echo "Syncing remote $remote"
-    branches=`git for-each-ref --format='%(refname:short)' | grep -v \/`
+    branches=`git branch | tr '*' ' '`
     startbranch=`LANG=en git status | grep "On branch" | cut -d " " -f 3`
     filemark="$rootfolder/.skz_$remote"
     for branch in $branches;
