@@ -1428,12 +1428,14 @@ xkb_symbols "pc+us+us:2+inet(evdev)" {
     };
     key <LNFD> {         [        Linefeed ] };
     key <HOME> {         [            Home ] };
-    key   <UP> {         [              Up, U2191 ] };
+    key   <UP> { 
+        type= "FOUR_LEVEL_SEMIALPHABETIC",
+        symbols[Group1]=[              Up, Up, j ] };
     key <PGUP> {         [           Prior ] };
-    key <LEFT> {         [            Left, U2190 ] };
-    key <RGHT> {         [           Right, U2192 ] };
+    key <LEFT> {         [            Left ] };
+    key <RGHT> {         [           Right ] };
     key  <END> {         [             End ] };
-    key <DOWN> {         [            Down, U2193 ] };
+    key <DOWN> {         [            Down ] };
     key <PGDN> {         [            Next ] };
     key  <INS> {         [          Insert ] };
     key <DELE> {         [          Delete ] };

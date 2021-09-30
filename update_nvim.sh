@@ -1,4 +1,5 @@
 #! /bin/bash
+mkdir -p $HOME/soft/nvim.versions
 cd $HOME/soft/nvim.versions
 if [[ "$1" == "nightly" ]];
 then

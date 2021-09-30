@@ -35,6 +35,6 @@ fi
 
 # genera la sortida
 nomdest="$path/$namesrc.odt"
-rst2odt --stylesheet=$stylepath --no-sections $src $nomdest
+rst2odt.py --stylesheet=$stylepath --no-sections $src $nomdest
 
 
