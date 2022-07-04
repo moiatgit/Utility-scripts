@@ -13,12 +13,13 @@ import os
 import filecmp
 
 
-dicM = { }  # diccionari amb clau la mida dels fitxers i valor la llista de fitxers de mateixa mida
-dicF = { }  # diccionari amb clau el nom d'un fitxer i valor la llista de fitxers amb mateix contingut
-dicD = { }  # diccionari amb clau el nom d'un directori i valor el nombre de fitxers que conté trobats repetits
+dicM = {}   # diccionari amb clau la mida dels fitxers i valor la llista de fitxers de mateixa mida
+dicF = {}   # diccionari amb clau el nom d'un fitxer i valor la llista de fitxers amb mateix contingut
+dicD = {}   # diccionari amb clau el nom d'un directori i valor el nombre de fitxers que conté trobats repetits
 nf   = 0    # nombre de fitxers tractats
 mt   = 0    # mida total dels fitxers tractats
 mr   = 0    # mida total dels fitxers repetits
+
 
 def compara_fitxer_lst(f, lst):
     """ compara f amb els fitxers de lst.
