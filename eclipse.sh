@@ -1,2 +1,2 @@
 #! /bin/sh
-~/soft/eclipse/eclipse &
+~/soft/eclipse/java-2021-09/eclipse/eclipse &

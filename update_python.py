@@ -3,13 +3,13 @@ echo "This script updates python"
 if [ -z "$1" ];
 then
     echo "Use $0 download-url"
-    echo "\t e.g. $0 https://www.python.org/downloads/release/python-3111/"
+    echo "\te.g. $0 https://www.python.org/ftp/python/3.11.1/Python-3.11.1.tgz"
 exit 1
 fi
 zipped=$(basename $1)
 foldername=${zipped%.*}
 echo $foldername
-cd /tmp
+cd ${TMPDIR:-/tmp}
 if ! wget -c "$1";
 then
     echo "Error downloading $1"

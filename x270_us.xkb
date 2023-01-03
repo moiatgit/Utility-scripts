@@ -1184,13 +1184,16 @@ xkb_symbols "pc+us+us:2+inet(evdev)" {
     name[group2]="English (US)";
 
     key  <ESC> {         [          Escape ] };
-    key <AE01> { 
-        type[group1]= "FOUR_LEVEL_SEMIALPHABETIC",
+    key <AE01> {
+        type= "FOUR_LEVEL_SEMIALPHABETIC",
         [               1,          exclam, exclamdown ]
     };
     key <AE02> {         [               2,              at ] };
     key <AE03> {         [               3,      numbersign,     U00B7 ] };
-    key <AE04> {         [               4,          dollar,     EuroSign,  asciitilde ] };
+    key <AE04> {
+        type= "FOUR_LEVEL",
+        [               4,          dollar,     EuroSign,  asciitilde ]
+    };
     key <AE05> {         [               5,         percent ] };
     key <AE06> {         [               6,     asciicircum ] };
     key <AE07> {         [               7,       ampersand ] };
@@ -1198,7 +1201,7 @@ xkb_symbols "pc+us+us:2+inet(evdev)" {
     key <AE09> {         [               9,       parenleft ] };
     key <AE10> {         [               0,      parenright ] };
     key <AE11> {
-        type = "FOUR_LEVEL_SEMIALPHABETIC",
+        type= "FOUR_LEVEL_SEMIALPHABETIC",
         [           minus,      underscore, U2014 ]
     };
     key <AE12> {         [           equal,            plus ] };
@@ -1206,7 +1209,7 @@ xkb_symbols "pc+us+us:2+inet(evdev)" {
     key  <TAB> {         [             Tab,    ISO_Left_Tab ] };
     key <AD01> {
         type= "FOUR_LEVEL_SEMIALPHABETIC",
-        symbols[Group1]= [               q,               Q, aacute, Aacute ]
+        [               q,               Q, aacute, Aacute ]
     };
     key <AD02> {
         type= "ALPHABETIC",
@@ -1214,7 +1217,7 @@ xkb_symbols "pc+us+us:2+inet(evdev)" {
     };
     key <AD03> {
         type= "FOUR_LEVEL_SEMIALPHABETIC",
-        symbols[Group1]= [               e,               E, eacute, Eacute ]
+        [               e,               E, eacute, Eacute ]
     };
     key <AD04> {
         type= "ALPHABETIC",
@@ -1230,15 +1233,15 @@ xkb_symbols "pc+us+us:2+inet(evdev)" {
     };
     key <AD07> {
         type= "FOUR_LEVEL_SEMIALPHABETIC",
-        symbols[Group1]= [               u,               U, uacute, Uacute ]
+        [               u,               U, uacute, Uacute ]
     };
     key <AD08> {
         type= "FOUR_LEVEL_SEMIALPHABETIC",
-        symbols[Group1]= [               i,               I, iacute, Iacute ]
+        [               i,               I, iacute, Iacute ]
     };
     key <AD09> {
         type= "FOUR_LEVEL_SEMIALPHABETIC",
-        symbols[Group1]= [               o,               O, oacute, Oacute ]
+        [               o,               O, oacute, Oacute ]
     };
     key <AD10> {
         type= "ALPHABETIC",
@@ -1250,15 +1253,15 @@ xkb_symbols "pc+us+us:2+inet(evdev)" {
     key <LCTL> {         [       Control_L ] };
     key <AC01> {
         type= "FOUR_LEVEL_SEMIALPHABETIC",
-        symbols[Group1]= [               a,               A, agrave, Agrave ]
+        [               a,               A, agrave, Agrave ]
     };
     key <AC02> {
-        type= "ALPHABETIC",
-        symbols[Group1]= [               s,               S ]
+        type= "FOUR_LEVEL_SEMIALPHABETIC",
+        [               s,               S, ssharp ]
     };
     key <AC03> {
         type= "FOUR_LEVEL_SEMIALPHABETIC",
-        symbols[Group1]= [               d,               D, egrave, Egrave ]
+        [               d,               D, egrave, Egrave ]
     };
     key <AC04> {
         type= "ALPHABETIC",
@@ -1274,19 +1277,23 @@ xkb_symbols "pc+us+us:2+inet(evdev)" {
     };
     key <AC07> {
         type= "FOUR_LEVEL_SEMIALPHABETIC",
-        symbols[Group1]= [               j,               J, udiaeresis,  Udiaeresis ]
+        [               j,               J, udiaeresis,  Udiaeresis ]
     };
     key <AC08> {
         type= "FOUR_LEVEL_SEMIALPHABETIC",
-        symbols[Group1]= [               k,               K, idiaeresis, Idiaeresis ]
+        [               k,               K, idiaeresis, Idiaeresis ]
     };
     key <AC09> {
         type= "FOUR_LEVEL_SEMIALPHABETIC",
-        symbols[Group1]= [               l,               L,  ograve, Ograve ]
+        [               l,               L,  ograve, Ograve ]
     };
     key <AC10> {         [       semicolon,           colon ] };
-    key <AC11> {         [      apostrophe,        quotedbl ] };
-    key <TLDE> {         [           grave,      asciitilde ] };
+    key <AC11> {
+        type= "FOUR_LEVEL",
+        [      apostrophe,        quotedbl, dead_acute, dead_diaeresis ] };
+    key <TLDE> {
+        type= "FOUR_LEVEL",
+        [           grave,      asciitilde,     dead_grave, dead_tilde ] };
     key <LFSH> {         [         Shift_L ] };
     key <BKSL> {         [       backslash,             bar ] };
     key <AB01> {
@@ -1299,7 +1306,7 @@ xkb_symbols "pc+us+us:2+inet(evdev)" {
     };
     key <AB03> {
         type= "FOUR_LEVEL_SEMIALPHABETIC",
-        symbols[Group1]= [               c,               C, ccedilla, Ccedilla ]
+        [               c,               C, ccedilla, Ccedilla ]
     };
     key <AB04> {
         type= "ALPHABETIC",
@@ -1311,15 +1318,24 @@ xkb_symbols "pc+us+us:2+inet(evdev)" {
     };
     key <AB06> {
         type= "FOUR_LEVEL_SEMIALPHABETIC",
-        symbols[Group1]= [               n,               N, ntilde, Ntilde ]
+        [               n,               N, ntilde, Ntilde ]
     };
     key <AB07> {
         type= "ALPHABETIC",
         symbols[Group1]= [               m,               M ]
     };
-    key <AB08> {         [           comma,            less,  guillemotleft ] };
-    key <AB09> {         [          period,         greater, guillemotright, U2026 ] };
-    key <AB10> {         [           slash,        question, questiondown, questiondown ] };
+    key <AB08> {
+        type="FOUR_LEVEL",
+        [           comma,            less,  guillemotleft ]
+    };
+    key <AB09> {
+        type="FOUR_LEVEL",
+        [          period,         greater, guillemotright, U2026 ]
+    };
+    key <AB10> {
+        type="FOUR_LEVEL",
+        [           slash,        question, questiondown, questiondown ]
+    };
     key <RTSH> {         [         Shift_R ] };
     key <KPMU> {
         type= "CTRL+ALT",
@@ -1428,7 +1444,7 @@ xkb_symbols "pc+us+us:2+inet(evdev)" {
     };
     key <LNFD> {         [        Linefeed ] };
     key <HOME> {         [            Home ] };
-    key   <UP> { 
+    key   <UP> {
         type= "FOUR_LEVEL_SEMIALPHABETIC",
         symbols[Group1]=[              Up, Up, j ] };
     key <PGUP> {         [           Prior ] };
