@@ -1249,7 +1249,7 @@ xkb_symbols "pc+us+us:2+inet(evdev)" {
     };
     key <AD11> {         [     bracketleft,       braceleft ] };
     key <AD12> {         [    bracketright,      braceright ] };
-    key <RTRN> {        [          Return ] };
+    key <RTRN> {         [          Return ] };
     key <LCTL> {         [       Control_L ] };
     key <AC01> {
         type= "FOUR_LEVEL_SEMIALPHABETIC",

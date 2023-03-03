@@ -1420,9 +1420,18 @@ xkb_symbols "pc+us+us:2+inet(evdev)" {
     };
     key <KATA> {         [        Katakana ] };
     key <HIRA> {         [        Hiragana ] };
-    key <HENK> {         [     Henkan_Mode ] };
-    key <HKTG> {         [ Hiragana_Katakana ] };
-    key <MUHE> {         [        Muhenkan ] };
+    //key <HENK> {         [     Henkan_Mode ] };
+    key <HENK> {         [          Return ] };
+    //key <HKTG> {         [ Hiragana_Katakana ] };
+    key <HKTG> {
+        // MGG: x270
+        //type= "TWO_LEVEL",
+        //symbols[Group1]= [           Alt_R,          Meta_R ]
+        type= "ONE_LEVEL",
+        symbols[Group1]= [ ISO_Level3_Shift ]
+    };
+    //key <MUHE> {         [        Muhenkan ] };
+    key <MUHE> {         [          Escape ] };
     key <KPEN> {         [        KP_Enter ] };
     key <RCTL> {         [       Control_R ] };
     key <KPDV> {
@@ -1444,7 +1453,9 @@ xkb_symbols "pc+us+us:2+inet(evdev)" {
     };
     key <LNFD> {         [        Linefeed ] };
     key <HOME> {         [            Home ] };
-    key   <UP> {	 [              Up ] };
+    key   <UP> {
+        type= "FOUR_LEVEL_SEMIALPHABETIC",
+        symbols[Group1]=[              Up, Up, j ] };
     key <PGUP> {         [           Prior ] };
     key <LEFT> {         [            Left ] };
     key <RGHT> {         [           Right ] };
@@ -1576,7 +1587,7 @@ xkb_symbols "pc+us+us:2+inet(evdev)" {
     key <AB11> {         [          Escape ] };
     key <JPCM> {         [          Escape ] };
     key <I120> {         [          Escape ] };
-    key <AE13> {         [          Escape ] };
+    key <AE13> {         [       BackSpace,       BackSpace ] };
     key <I149> {         [          Escape ] };
     key <I154> {         [          Escape ] };
     key <I168> {         [          Escape ] };
