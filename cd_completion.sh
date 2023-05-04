@@ -73,7 +73,7 @@ _cd_completion() {
     local envar_name=$(extract_env_var "$cur")
     local cmd="${COMP_WORDS[0]}"
     if [[ "$envar_name" == "" && "$cur" != '$' ]]; then   # completion without environment variable
-        if [[ "$cmd" == "cp" ]]; then
+        if [[ "$cmd" == "cd" ]]; then
             readarray -t COMPREPLY < <(compgen -f -- "$cur")
         else
             readarray -t COMPREPLY < <(compgen -d -- "$cur")
@@ -87,7 +87,7 @@ _cd_completion() {
             local rest=$(extract_rest "$cur")
             local expanded=$(expand_env_var "$envar_name")
             local complete="$expanded/$rest"
-            if [[ "$cmd" == "cp" ]]; then
+            if [[ "$cmd" == "cd" ]]; then
                 readarray -t COMPREPLY < <(compgen -f -- "$cur")
             else
                 readarray -t COMPREPLY < <(compgen -d -- "$cur")
