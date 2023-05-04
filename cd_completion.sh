@@ -108,16 +108,18 @@ _cd_completion() {
         fi
         if [[ -d "${to_check}" ]]; then
             results+=("$var/")
+        #elif [[ -f  "${to_check}" ]]; then                
+        #    results+=("$var ")
         else
             results+=("$var")
         fi
     done
     COMPREPLY=("${results[@]}")
 
-    # Add nospace option if there is only one completion option
-    if [[ ${#COMPREPLY[@]} -eq 1 ]]; then
-        compopt -o nospace
-    fi
+    ## Add nospace option if there is only one completion option
+    #if [[ ${#COMPREPLY[@]} -eq 1 ]]; then
+    #    compopt -o nospace
+    #fi
 }
 complete -F '_cd_completion' cd
 complete -F '_cd_completion' cp
