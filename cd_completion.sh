@@ -68,16 +68,12 @@ expand_env_var() {
 # completion functions
 ######################
 
-_cd_completion() {
+_file_completion() {
     local cur="${COMP_WORDS[COMP_CWORD]}"
     local envar_name=$(extract_env_var "$cur")
     local cmd="${COMP_WORDS[0]}"
     if [[ "$envar_name" == "" && "$cur" != '$' ]]; then   # completion without environment variable
-        if [[ "$cmd" == "cd" ]]; then
-            readarray -t COMPREPLY < <(compgen -d -- "$cur")
-        else
-            readarray -t COMPREPLY < <(compgen -f -- "$cur")
-        fi
+        readarray -t COMPREPLY < <(compgen -f -- "$cur")
     else
         if [[ "$envar_name" == "$cur" || "$cur" == '$' ]]; then   # not yet completed environment var
             # Get environment variables starting with the prefix
@@ -87,12 +83,7 @@ _cd_completion() {
             local rest=$(extract_rest "$cur")
             local expanded=$(expand_env_var "$envar_name")
             local complete="$expanded/$rest"
-            if [[ "$cmd" == "cd" ]]; then
-                readarray -t COMPREPLY < <(compgen -d -- "$cur")
-            else
-                readarray -t COMPREPLY < <(compgen -f -- "$cur")
-            fi
-
+            readarray -t COMPREPLY < <(compgen -f -- "$cur")
         fi
     fi
 
@@ -108,19 +99,57 @@ _cd_completion() {
         fi
         if [[ -d "${to_check}" ]]; then
             results+=("$var/")
-        #elif [[ -f  "${to_check}" ]]; then                
-        #    results+=("$var ")
         else
             results+=("$var")
         fi
     done
     COMPREPLY=("${results[@]}")
 
-    ## Add nospace option if there is only one completion option
-    #if [[ ${#COMPREPLY[@]} -eq 1 ]]; then
-    #    compopt -o nospace
-    #fi
+    # Add nospace option if there is only one completion option
+    if [[ ${#COMPREPLY[@]} -eq 1 ]]; then
+        compopt -o nospace
+    fi
+}
+
+_cd_completion() {
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    local envar_name=$(extract_env_var "$cur")
+    local cmd="${COMP_WORDS[0]}"
+    if [[ "$envar_name" == "" && "$cur" != '$' ]]; then   # completion without environment variable
+        readarray -t COMPREPLY < <(compgen -d -- "$cur")
+    else
+        if [[ "$envar_name" == "$cur" || "$cur" == '$' ]]; then   # not yet completed environment var
+            # Get environment variables starting with the prefix
+            local prefix=${cur:1}
+            get_folder_envars "$prefix"
+        else                        # environment var is already completed
+            local rest=$(extract_rest "$cur")
+            local expanded=$(expand_env_var "$envar_name")
+            local complete="$expanded/$rest"
+            readarray -t COMPREPLY < <(compgen -d -- "$cur")
+        fi
+    fi
+
+    # append / to the results that correspond to a folder
+    local results=()
+    for var in "${COMPREPLY[@]}"; do
+        local envar_name=$(extract_env_var "$var")
+        local to_check="$var"
+        if [[ "$envar_name" != "" ]]; then
+            expanded=$(expand_env_var "$envar_name")
+            rest=$(extract_rest "$var/")
+            to_check="$expanded/$rest"
+        fi
+        results+=("$var/")
+    done
+    COMPREPLY=("${results[@]}")
+
+    # Add nospace option if there is only one completion option
+    if [[ ${#COMPREPLY[@]} -eq 1 ]]; then
+        compopt -o nospace
+    fi
 }
 complete -F '_cd_completion' cd
-complete -F '_cd_completion' cp
-complete -F '_cd_completion' mv
+complete -F '_file_completion' cp
+complete -F '_file_completion' mv
+complete -F '_file_completion' tvim

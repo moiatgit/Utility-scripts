@@ -15,5 +15,3 @@ else
     OPTION="-q"
     $TERMINAL $OPTION -- $vimflavor -p "$*"
 fi
-
-
