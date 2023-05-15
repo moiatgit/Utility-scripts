@@ -1455,12 +1455,18 @@ xkb_symbols "pc+us+us:2+inet(evdev)" {
     key <HOME> {         [            Home ] };
     key   <UP> {
         type= "FOUR_LEVEL_SEMIALPHABETIC",
-        symbols[Group1]=[              Up, Up, j ] };
+        symbols[Group1]=[              Up, Up, Prior ] };
     key <PGUP> {         [           Prior ] };
-    key <LEFT> {         [            Left ] };
-    key <RGHT> {         [           Right ] };
+    key <LEFT> {
+        type= "FOUR_LEVEL_SEMIALPHABETIC",
+        symbols[Group1]=[              Left, Left, Home ] };
+    key <RGHT> {
+        type= "FOUR_LEVEL_SEMIALPHABETIC",
+        symbols[Group1]=[              Right, Right, End ] };
     key  <END> {         [             End ] };
-    key <DOWN> {         [            Down ] };
+    key <DOWN> {
+        type= "FOUR_LEVEL_SEMIALPHABETIC",
+        symbols[Group1]=[              Down, Down, Next ] };
     key <PGDN> {         [            Next ] };
     key  <INS> {         [          Insert ] };
     key <DELE> {         [          Delete ] };
