@@ -2,7 +2,6 @@
 # Usage:
 #   Source this file, for example in your ~/.bashrc or similar. e.g.
 #   source cd_completion.sh
-#
 
 ##################
 # Helper functions
@@ -87,20 +86,26 @@ _file_completion() {
         fi
     fi
 
-    # append / to the results that correspond to a folder
+    # potst process the results
+    # 1. append / to the results that correspond to a folder
+    # 2. escape special characters
     local results=()
     for var in "${COMPREPLY[@]}"; do
         local envar_name=$(extract_env_var "$var")
+        # local to_check="$var"
         local to_check="$var"
         if [[ "$envar_name" != "" ]]; then
             expanded=$(expand_env_var "$envar_name")
             rest=$(extract_rest "$var/")
             to_check="$expanded/$rest"
         fi
+        escaped="$(printf "%q" "$var")"
         if [[ -d "${to_check}" ]]; then
-            results+=("$var/")
+            results+=("$escaped/")
+        elif [[ -f "${to_check}" ]]; then
+            results+=("$escaped ")
         else
-            results+=("$var")
+            results+=("$escaped")
         fi
     done
     COMPREPLY=("${results[@]}")
