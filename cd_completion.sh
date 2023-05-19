@@ -2,6 +2,8 @@
 # Usage:
 #   Source this file, for example in your ~/.bashrc or similar. e.g.
 #   source cd_completion.sh
+#
+#   TODO: consider accepting ~/ paths without escaping the ~
 
 ##################
 # Helper functions
@@ -94,18 +96,27 @@ _file_completion() {
         local envar_name=$(extract_env_var "$var")
         # local to_check="$var"
         local to_check="$var"
+        local to_append=''
         if [[ "$envar_name" != "" ]]; then
             expanded=$(expand_env_var "$envar_name")
             rest=$(extract_rest "$var/")
-            to_check="$expanded/$rest"
-        fi
-        escaped="$(printf "%q" "$var")"
-        if [[ -d "${to_check}" ]]; then
-            results+=("$escaped/")
-        elif [[ -f "${to_check}" ]]; then
-            results+=("$escaped ")
+            if [[ "$rest" != "" ]]; then
+                escaped="$(printf "%q" "$rest")"     # escape special chars like whitespace
+                to_check="$expanded/$rest"
+                to_append="$envar_name/$escaped"
+            else
+                to_check="$expanded"
+                to_append="$envar_name"
+            fi
         else
-            results+=("$escaped")
+            to_append="$(printf "%q" "$var")"
+        fi
+        if [[ -d "${to_check}" ]]; then
+            results+=("$to_append/")
+        elif [[ -f "${to_check}" ]]; then
+            results+=("$to_append ")
+        else
+            results+=("$to_append")
         fi
     done
     COMPREPLY=("${results[@]}")
