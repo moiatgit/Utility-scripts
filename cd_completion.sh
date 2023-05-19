@@ -2,8 +2,6 @@
 # Usage:
 #   Source this file, for example in your ~/.bashrc or similar. e.g.
 #   source cd_completion.sh
-#
-#   TODO: consider accepting ~/ paths without escaping the ~
 
 ##################
 # Helper functions
@@ -13,6 +11,8 @@
 extract_env_var() {
     if [[ "$1" == *"$"* ]]; then
         echo "$1" | grep -o '$[a-zA-Z_][a-zA-Z_0-9]*'
+    elif [[ "$1" =~ ^~ ]]; then
+        echo '$HOME'
     else
         echo ""
     fi
@@ -64,6 +64,48 @@ expand_env_var() {
     echo "${!prefix}"
 }
 
+# post processes the COMPREPLY contents so
+# 1. it ends with / when an existing folder
+# 2. it ends with whitespace when an existing file
+# 3. it escapes special characters
+postprocess_COMPREPLY() {
+    local results=()
+    for var in "${COMPREPLY[@]}"; do
+        local envar_name=$(extract_env_var "$var")
+        # local to_check="$var"
+        local to_check="$var"
+        local to_append=''
+        if [[ "$envar_name" != "" ]]; then
+            expanded=$(expand_env_var "$envar_name")
+            rest=$(extract_rest "$var")
+            if [[ "$rest" != "" ]]; then
+                escaped="$(printf "%q" "$rest")"     # escape special chars like whitespace
+                to_check="$expanded/$rest"
+                to_append="$envar_name/$escaped"
+            else
+                to_check="$expanded"
+                to_append="$envar_name"
+            fi
+        else
+            to_append="$(printf "%q" "$var")"
+        fi
+        if [[ -d "${to_check}" ]]; then
+            results+=("${to_append%/}/")
+        elif [[ -f "${to_check}" ]]; then
+            results+=("$to_append ")
+        else
+            results+=("$to_append")
+        fi
+    done
+    COMPREPLY=("${results[@]}")
+
+    # Add nospace option if there is only one completion option
+    if [[ ${#COMPREPLY[@]} -eq 1 ]]; then
+        compopt -o nospace
+    fi
+}
+
+
 
 ######################
 # completion functions
@@ -87,44 +129,7 @@ _file_completion() {
             readarray -t COMPREPLY < <(compgen -f -- "$cur")
         fi
     fi
-
-    # potst process the results
-    # 1. append / to the results that correspond to a folder
-    # 2. escape special characters
-    local results=()
-    for var in "${COMPREPLY[@]}"; do
-        local envar_name=$(extract_env_var "$var")
-        # local to_check="$var"
-        local to_check="$var"
-        local to_append=''
-        if [[ "$envar_name" != "" ]]; then
-            expanded=$(expand_env_var "$envar_name")
-            rest=$(extract_rest "$var/")
-            if [[ "$rest" != "" ]]; then
-                escaped="$(printf "%q" "$rest")"     # escape special chars like whitespace
-                to_check="$expanded/$rest"
-                to_append="$envar_name/$escaped"
-            else
-                to_check="$expanded"
-                to_append="$envar_name"
-            fi
-        else
-            to_append="$(printf "%q" "$var")"
-        fi
-        if [[ -d "${to_check}" ]]; then
-            results+=("$to_append/")
-        elif [[ -f "${to_check}" ]]; then
-            results+=("$to_append ")
-        else
-            results+=("$to_append")
-        fi
-    done
-    COMPREPLY=("${results[@]}")
-
-    # Add nospace option if there is only one completion option
-    if [[ ${#COMPREPLY[@]} -eq 1 ]]; then
-        compopt -o nospace
-    fi
+    postprocess_COMPREPLY
 }
 
 _cd_completion() {
@@ -145,25 +150,7 @@ _cd_completion() {
             readarray -t COMPREPLY < <(compgen -d -- "$cur")
         fi
     fi
-
-    # append / to the results that correspond to a folder
-    local results=()
-    for var in "${COMPREPLY[@]}"; do
-        local envar_name=$(extract_env_var "$var")
-        local to_check="$var"
-        if [[ "$envar_name" != "" ]]; then
-            expanded=$(expand_env_var "$envar_name")
-            rest=$(extract_rest "$var/")
-            to_check="$expanded/$rest"
-        fi
-        results+=("$var/")
-    done
-    COMPREPLY=("${results[@]}")
-
-    # Add nospace option if there is only one completion option
-    if [[ ${#COMPREPLY[@]} -eq 1 ]]; then
-        compopt -o nospace
-    fi
+    postprocess_COMPREPLY
 }
 complete -F '_cd_completion' cd
 complete -F '_file_completion' cp
