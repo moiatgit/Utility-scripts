@@ -1455,21 +1455,24 @@ xkb_symbols "pc+us+us:2+inet(evdev)" {
     key <HOME> {         [            Home ] };
     key   <UP> {
         type= "FOUR_LEVEL_SEMIALPHABETIC",
-        symbols[Group1]=[              Up, Up, Prior ] };
+        symbols[Group1]=[              Up, Up, Prior, Prior, Prior ] };
     key <PGUP> {         [           Prior ] };
     key <LEFT> {
         type= "FOUR_LEVEL_SEMIALPHABETIC",
-        symbols[Group1]=[              Left, Left, Home ] };
+        symbols[Group1]=[              Left, Left, Home, Home, Home ] };
     key <RGHT> {
         type= "FOUR_LEVEL_SEMIALPHABETIC",
-        symbols[Group1]=[              Right, Right, End ] };
+        symbols[Group1]=[              Right, Right, End, End, End ] };
     key  <END> {         [             End ] };
     key <DOWN> {
         type= "FOUR_LEVEL_SEMIALPHABETIC",
-        symbols[Group1]=[              Down, Down, Next ] };
+        symbols[Group1]=[              Down, Down, Next, Next, Next ] };
     key <PGDN> {         [            Next ] };
     key  <INS> {         [          Insert ] };
-    key <DELE> {         [          Delete ] };
+    key <DELE> {
+        type= "FOUR_LEVEL_SEMIALPHABETIC",
+        Symbols[Group1]=[       Delete,       BackSpace, BackSpace ]
+        };
     key <MUTE> {         [   XF86AudioMute ] };
     key <VOL-> {         [ XF86AudioLowerVolume ] };
     key <VOL+> {         [ XF86AudioRaiseVolume ] };
