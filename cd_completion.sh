@@ -20,7 +20,13 @@ extract_env_var() {
 
 # Returns the contents after an starting environment variable
 extract_rest() {
-    echo "${1#*/}"
+    local prefix="$1"
+    local path="$2"
+    if [[ "$path" == "$prefix"* ]]; then
+        echo "${path:${#prefix}}"
+    else
+        echo "$path"
+    fi
 }
 
 # Returns a list of environment variables starting with the prefix
@@ -64,6 +70,13 @@ expand_env_var() {
     echo "${!prefix}"
 }
 
+# For debug
+showXXX() {
+#    echo
+#    echo $1
+:
+ }
+
 # post processes the COMPREPLY contents so
 # 1. it ends with / when an existing folder
 # 2. it ends with whitespace when an existing file
@@ -72,14 +85,13 @@ postprocess_COMPREPLY() {
     local results=()
     for var in "${COMPREPLY[@]}"; do
         local envar_name=$(extract_env_var "$var")
-        # local to_check="$var"
         local to_check="$var"
         local to_append=''
         if [[ "$envar_name" != "" ]]; then
-            expanded=$(expand_env_var "$envar_name")
-            rest=$(extract_rest "$var")
+            local expanded=$(expand_env_var "$envar_name")
+            local rest=$(extract_rest "$envar_name" "$var")
             if [[ "$rest" != "" ]]; then
-                escaped="$(printf "%q" "$rest")"     # escape special chars like whitespace
+                local escaped="$(printf "%q" "$rest")"     # escape special chars like whitespace
                 to_check="$expanded/$rest"
                 to_append="$envar_name/$escaped"
             else
@@ -123,7 +135,7 @@ _file_completion() {
             local prefix=${cur:1}
             get_folder_envars "$prefix"
         else                        # environment var is already completed
-            local rest=$(extract_rest "$cur")
+            local rest=$(extract_rest "$envar_name" "$cur")
             local expanded=$(expand_env_var "$envar_name")
             local complete="$expanded/$rest"
             readarray -t COMPREPLY < <(compgen -f -- "$cur")
