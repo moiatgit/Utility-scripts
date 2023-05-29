@@ -1,4 +1,4 @@
-# more natural completion of cd with environment variables
+# more natural completion of cd with emnvironment variables
 # Usage:
 #   Source this file, for example in your ~/.bashrc or similar. e.g.
 #   source cd_completion.sh
@@ -11,8 +11,6 @@
 extract_env_var() {
     if [[ "$1" == *"$"* ]]; then
         echo "$1" | grep -o '$[a-zA-Z_][a-zA-Z_0-9]*'
-    elif [[ "$1" =~ ^~ ]]; then
-        echo '$HOME'
     else
         echo ""
     fi
@@ -72,9 +70,8 @@ expand_env_var() {
 
 # For debug
 showXXX() {
-#    echo
-#    echo $1
-:
+    echo
+    echo $1
  }
 
 # post processes the COMPREPLY contents so
@@ -89,7 +86,7 @@ postprocess_COMPREPLY() {
         local to_append=''
         if [[ "$envar_name" != "" ]]; then
             local expanded=$(expand_env_var "$envar_name")
-            local rest=$(extract_rest "$envar_name" "$var")
+            local rest=$(extract_rest "$envar_name/" "$var")
             if [[ "$rest" != "" ]]; then
                 local escaped="$(printf "%q" "$rest")"     # escape special chars like whitespace
                 to_check="$expanded/$rest"
@@ -98,6 +95,10 @@ postprocess_COMPREPLY() {
                 to_check="$expanded"
                 to_append="$envar_name"
             fi
+        elif [[ "$var" == '~/'* ]]; then
+            local rest="$(printf "%q" ${var:2})"
+            to_append="~/$rest"
+            to_check="$HOME/$rest"
         else
             to_append="$(printf "%q" "$var")"
         fi
