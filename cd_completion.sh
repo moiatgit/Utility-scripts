@@ -18,9 +18,9 @@ extract_env_var() {
 
 # Returns the contents after an starting environment variable
 extract_rest() {
-    local prefix="$1"
+    local prefix="$1/"
     local path="$2"
-    if [[ "$path" == "$prefix"* ]]; then
+    if [[ "$path" == "$1"* ]]; then
         echo "${path:${#prefix}}"
     else
         echo "$path"
@@ -86,7 +86,7 @@ postprocess_COMPREPLY() {
         local to_append=''
         if [[ "$envar_name" != "" ]]; then
             local expanded=$(expand_env_var "$envar_name")
-            local rest=$(extract_rest "$envar_name/" "$var")
+            local rest=$(extract_rest "$envar_name" "$var")
             if [[ "$rest" != "" ]]; then
                 local escaped="$(printf "%q" "$rest")"     # escape special chars like whitespace
                 to_check="$expanded/$rest"
