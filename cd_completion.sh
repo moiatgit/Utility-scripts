@@ -77,7 +77,9 @@ showXXX() {
 # post processes the COMPREPLY contents so
 # 1. it ends with / when an existing folder
 # 2. it ends with whitespace when an existing file
-# 3. it escapes special characters
+# 3. it escapes special characters with printf "%q"
+# 4. it deals properly with paths starting with ~
+# 5. it deals properly with paths starting with $
 postprocess_COMPREPLY() {
     local results=()
     for var in "${COMPREPLY[@]}"; do
@@ -88,7 +90,7 @@ postprocess_COMPREPLY() {
             local expanded=$(expand_env_var "$envar_name")
             local rest=$(extract_rest "$envar_name" "$var")
             if [[ "$rest" != "" ]]; then
-                local escaped="$(printf "%q" "$rest")"     # escape special chars like whitespace
+                local escaped="$(printf "%q" "$rest")"
                 to_check="$expanded/$rest"
                 to_append="$envar_name/$escaped"
             else
@@ -96,8 +98,8 @@ postprocess_COMPREPLY() {
                 to_append="$envar_name"
             fi
         elif [[ "$var" == '~/'* ]]; then
-            local rest="$(printf "%q" ${var:2})"
-            to_append="~/$rest"
+            local rest="${var:2}"
+            to_append="~/$(printf "%q" "$rest")"
             to_check="$HOME/$rest"
         else
             to_append="$(printf "%q" "$var")"
