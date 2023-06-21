@@ -95,7 +95,7 @@ postprocess_COMPREPLY() {
                 to_append="$envar_name"
             fi
         elif [[ "$var" == '~/'* ]]; then
-            local rest="$(printf "%q" ${var:2})"
+            local rest="$(printf "%q" "${var:2}")"
             to_append="~/$rest"
         else
             to_append="$(printf "%q" "$var")"
@@ -154,46 +154,10 @@ _completion() {
 
 _file_completion() {
     _completion f
-    #local cur="${COMP_WORDS[COMP_CWORD]}"
-    #local envar_name=$(extract_env_var "$cur")
-    #local cmd="${COMP_WORDS[0]}"
-    #if [[ "$envar_name" == "" && "$cur" != '$' ]]; then   # completion without environment variable
-    #    readarray -t COMPREPLY < <(compgen -f -- "$cur")
-    #else
-    #    if [[ "$envar_name" == "$cur" || "$cur" == '$' ]]; then   # not yet completed environment var
-    #        # Get environment variables starting with the prefix
-    #        local prefix=${cur:1}
-    #        get_folder_envars "$prefix"
-    #    else                        # environment var is already completed
-    #        local rest=$(extract_rest "$envar_name" "$cur")
-    #        local expanded=$(expand_env_var "$envar_name")
-    #        local complete="$expanded/$rest"
-    #        readarray -t COMPREPLY < <(compgen -f -- "$cur")
-    #    fi
-    #fi
-    #postprocess_COMPREPLY
 }
 
 _cd_completion() {
     _completion d
-    #local cur="${COMP_WORDS[COMP_CWORD]}"
-    #local envar_name=$(extract_env_var "$cur")
-    #local cmd="${COMP_WORDS[0]}"
-    #if [[ "$envar_name" == "" && "$cur" != '$' ]]; then   # completion without environment variable
-    #    readarray -t COMPREPLY < <(compgen -d -- "$cur")
-    #else
-    #    if [[ "$envar_name" == "$cur" || "$cur" == '$' ]]; then   # not yet completed environment var
-    #        # Get environment variables starting with the prefix
-    #        local prefix=${cur:1}
-    #        get_folder_envars "$prefix"
-    #    else                        # environment var is already completed
-    #        local rest=$(extract_rest "$envar_name" "$cur")
-    #        local expanded=$(expand_env_var "$envar_name")
-    #        local complete="$expanded/$rest"
-    #        readarray -t COMPREPLY < <(compgen -d -- "$cur")
-    #    fi
-    #fi
-    #postprocess_COMPREPLY
 }
 complete -F '_cd_completion' cd
 complete -F '_file_completion' cp
