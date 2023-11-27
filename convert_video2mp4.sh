@@ -12,7 +12,7 @@ do
         if [ ! -f "$name.mp4" ];
         then
             echo "Lets go for $name"
-            nice HandBrakeCLI -i "$i" -o "$name.mp4"
+            nice HandBrakeCLI -i "$i" -o "$name.mp4" --maxWidth 1920 --maxHeight 1080
         fi
     fi
 done
