@@ -3,6 +3,8 @@
 #
 # Sets the shortcuts to access the different workspaces
 gsettings set org.gnome.desktop.wm.preferences num-workspaces 10
+# Sets the name of the workspaces
+gsettings set org.gnome.desktop.wm.preferences workspace-names "['escriptori 1', 'escriptori 2', 'escriptori 3', 'escriptori 4', 'escriptori 5', 'escriptori 6', 'escriptori 7', 'escriptori 8', 'esciptori 9', 'escriptori 10']"
 #
 gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-1  "['<Super>1']"
 gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-2  "['<Super>2']"
