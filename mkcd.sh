@@ -9,4 +9,4 @@ function mkcd() {
   [ -n "$1" ] && mkdir -p "$@" && cd "$1";
 }
 
-complete -F '_cd_completion' mkcd
+#complete -F '_cd_completion' mkcd
