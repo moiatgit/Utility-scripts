@@ -1,6 +1,6 @@
 #! /bin/sh
 vimflavor=vim
-filetoopen=$HOME/.contrasuenyes
+filetoopen=$HOME/.config/contrasuenyes/.contrasuenyes
 
 TERMINAL=gnome-terminal     # xfce4-terminal
 
