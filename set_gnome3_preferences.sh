@@ -28,6 +28,11 @@ gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-8  "['<Super><S
 gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-9  "['<Super><Shift>9']"
 gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-10 "['<Super><Shift>0']"
 
+# alt-tab to switch to next window
+##gsettings set org.gnome.desktop.wm.keybindings switch-windows "['<Alt>Tab']"
+##gsettings set org.gnome.desktop.wm.keybindings switch-windows-backward "['<Shift><Alt>Tab']"
+gsettings set org.gnome.shell.window-switcher current-workspace-only true
+
 # disable animations
 gsettings set org.gnome.desktop.interface enable-animations false
 
