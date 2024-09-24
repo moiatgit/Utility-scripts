@@ -27,4 +27,19 @@ sudo apt install python3-tk tk tk-dev libffi-dev
 #gsettings set org.gnome.shell.app-switcher current-workspace-only true
 
 
+sudo apt install cmake
 sudo apt install libcanberra-gtk-module
+sudo apt install nodejs npm -y
+
+wget -P ~/.local/share/fonts https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/AnonymiceProNerdFontMono.zip \
+&& cd ~/.local/share/fonts \
+&& unzip AnonymiceProNerdFontMono.zip \
+&& rm AnonymiceProNerdFontMono.zip \
+&& fc-cache -fv
+
+cargo install tree-sitter-cli
+sudo apt install luarocks
+sudo luarocks install jsregexp
+
+# Utilities for sphinx
+sudo apt install plantuml
