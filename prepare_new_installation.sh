@@ -45,4 +45,4 @@ sudo luarocks install jsregexp
 sudo apt install plantuml
 
 # Working with nuitka
-sudo apt install patchelf, ccache
+sudo apt install patchelf ccache
