@@ -43,3 +43,6 @@ sudo luarocks install jsregexp
 
 # Utilities for sphinx
 sudo apt install plantuml
+
+# Working with nuitka
+sudo apt install patchelf, ccache
