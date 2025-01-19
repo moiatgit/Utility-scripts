@@ -4,9 +4,28 @@ if [ -z "$1" ];
 then
     echo "Use $0 download-url | downloaded_file"
     echo "\te.g. $0 https://www.python.org/ftp/python/3.11.1/Python-3.11.1.tgz"
-exit 1
+    exit 1
 fi
-zipped=$(basename "$1")
+
+if [ -f "$1" ];
+then
+    zipped="$1"
+else
+    cd ${TMPDIR:-/tmp}
+    if ! wget -c "$1";
+    then
+        echo "Error downloading $1"
+        exit 1
+    fi
+    zipped=$(basename "$1")
+    if [ ! -f $zipped ];
+    then
+        echo "Error: downloaded file not found $zipped"
+        exit 1
+    fi
+fi
+echo "zipped $zipped"
+
 if [[ "$zipped" == *.tar.gz ]];
 then
     foldername=$(basename "$zipped" .tar.gz)
@@ -25,20 +44,6 @@ else
 fi
 echo "foldername $foldername"
 
-if [ ! -f $zipped ];
-then
-    cd ${TMPDIR:-/tmp}
-    if ! wget -c "$1";
-    then
-        echo "Error downloading $1"
-        exit 1
-    fi
-fi
-if [ ! -f $zipped ];
-then
-    echo "Error: downloaded file not found $zipped"
-    exit 1
-fi
 if [ ! -d $foldername ];
 then 
     tar $taroption "$zipped"

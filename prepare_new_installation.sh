@@ -6,6 +6,7 @@ sudo apt install vim vim-gui-common
 sudo apt install dconf-editor
 sudo apt install tree
 sudo apt install graphviz
+sudo apt install curl
 
 # for python3 compilation
 sudo apt install python3-pip
