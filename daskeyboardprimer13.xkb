@@ -1421,7 +1421,8 @@ xkb_symbols "pc+us+us:2+inet(evdev)" {
     key <KATA> {         [        Katakana ] };
     key <HIRA> {         [        Hiragana ] };
     //key <HENK> {         [     Henkan_Mode ] };
-    key <HENK> {         [          Return ] };
+    // Key after spacebar in Filco Majestouch
+    key <HENK> {         [          Escape ] };
     //key <HKTG> {         [ Hiragana_Katakana ] };
     key <HKTG> {
         // MGG: x270
@@ -1431,8 +1432,9 @@ xkb_symbols "pc+us+us:2+inet(evdev)" {
         symbols[Group1]= [ ISO_Level3_Shift ]
     };
     //key <MUHE> {         [        Muhenkan ] };
-    key <MUHE> {         [          Escape ] };
-    key <KPEN> {         [        KP_Enter ] };
+    // Key before spacebar in Filco Majestouch
+    key <MUHE> {         [          KP_Enter ] };
+    key <KPEN> {         [          Escape ] };
     key <RCTL> {         [       Control_R ] };
     key <KPDV> {
         type= "CTRL+ALT",
