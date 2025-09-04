@@ -45,6 +45,10 @@ def main():
             print(f"[green]INFO[/]: initial branch is {initial_branch}")
             try:
                 subprocess.run(["git", "checkout", branch], check=True)
+                result = subprocess.run(["git", "status"], check=True, capture_output=True, text=True)
+                if f"Your branch is ahead of '{remote}/{branch}'" not in result.stdout:
+                    print("[green]INFO[/]: nothing to push")
+                    continue
                 result = subprocess.run(["git", "push", remote, branch], check=True, capture_output=True, text=True)
                 print(f"[green]INFO[/]: pushed {path_str}")
                 print(result.stdout)
