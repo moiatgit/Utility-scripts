@@ -11,6 +11,24 @@ from rich import print
 import yaml
 
 
+def branch_ahead(remote: str, branch: str) -> bool:
+    """Return True if local branch is ahead of remote."""
+    result = subprocess.run(['git', 'rev-list', f"{remote}/{branch}..HEAD", "--count"],
+                            check=True, capture_output=True, text=True)
+    return int(result.stdout.strip()) > 0
+
+def current_branch() -> str:
+    """Return the current branch."""
+    result = subprocess.run(['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+                            check=True, capture_output=True, text=True)
+    return result.stdout.strip()
+
+def working_tree_clean() -> bool:
+    """Return if the working tree is clean."""
+    result = subprocess.run(['git', 'status', '--porcelain'],
+                            check=True, capture_output=True, text=True)
+    return result.stdout.strip() == ""
+
 def get_repositories() -> list:
     """ Returns the list of repositories from the configuration file.
         Halts on error. """
@@ -37,29 +55,24 @@ def main():
         print("# " + path_str)
         print("#" * 100)
         path = Path(path_str).expanduser()
-        print(f"pushing {path} from {remote} {branch}")
+        print(f"pulling {path} from {remote} {branch}")
         os.chdir(path)
         result = subprocess.run(["git", "status"], check=True, capture_output=True, text=True)
-        if 'working tree clean' in result.stdout:
-            initial_branch = result.stdout.split('\n')[0].split("On branch ")[1]
-            print(f"[green]INFO[/]: initial branch is {initial_branch}")
-            try:
+        if working_tree_clean():
+            initial_branch = current_branch()
+            if not branch_ahead(remote, branch):
+                print(f"[green]INFO[/]: Nothing to push")
+                continue
+            if initial_branch != branch:
                 subprocess.run(["git", "checkout", branch], check=True)
-                result = subprocess.run(["git", "status"], check=True, capture_output=True, text=True)
-                if f"Your branch is ahead of '{remote}/{branch}'" not in result.stdout:
-                    print("[green]INFO[/]: nothing to push")
-                    continue
-                result = subprocess.run(["git", "push", remote, branch], check=True, capture_output=True, text=True)
-                print(f"[green]INFO[/]: pushed {path_str}")
-                print(result.stdout)
+            try:
+                subprocess.run(['git', 'push', remote, branch], check=True)
+                print(f"[green]INFO[/]: pushed {path_str}:{branch}")
             finally:
-                subprocess.run(["git", "checkout", initial_branch], check=True)
-                result = subprocess.run(["git", "status"], check=True, capture_output=True, text=True)
-                final_branch = result.stdout.split('\n')[0].split("On branch ")[1]
-                print(f"[green]INFO[/]: final branch is {final_branch}")
-
+                if current_branch() != initial_branch:
+                    subprocess.run(["git", "checkout", initial_branch], check=True)
             continue
-        print("[yellow]WARNING[/]: Review the changes before pushing")
+        print("[yellow]WARNING[/]: Repo dirty, skipping: {path_str}")
         print(result.stdout)
 
 if __name__ == "__main__":

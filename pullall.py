@@ -4,33 +4,13 @@
     This script takes a list of repositories and tries to pull them.
 """
 import os
-import sys
 from pathlib import Path
 import subprocess
 from rich import print
-import yaml
-
-
-def get_repositories() -> list:
-    """ Returns the list of repositories from the configuration file.
-        Halts on error. """
-    specs_path_dir = Path("~/.config/repos").expanduser().absolute()
-
-    if not specs_path_dir.is_dir():
-        print(f"[red]ERROR[/]: {specs_path_dir} does not exist")
-        sys.exit(1)
-
-    repos_file = specs_path_dir / "repositories.yaml"
-    if not repos_file.is_file():
-        print(f"[red]ERROR[/]: {repos_file} does not exist")
-        sys.exit(1)
-
-    with open(specs_path_dir / "repositories.yaml", "r") as f:
-        repositories = yaml.safe_load(f)
-    return repositories
+import pushall
 
 def main():
-    repositories = get_repositories()
+    repositories = pushall.get_repositories()
     for path_str, remote, branch in repositories:
         print()
         print("#" * 100)
@@ -40,22 +20,18 @@ def main():
         print(f"pulling {path} from {remote} {branch}")
         os.chdir(path)
         result = subprocess.run(["git", "status"], check=True, capture_output=True, text=True)
-        if 'working tree clean' in result.stdout:
-            initial_branch = result.stdout.split('\n')[0].split("On branch ")[1]
-            print(f"[green]INFO[/]: initial branch is {initial_branch}")
-            try:
+        if pushall.working_tree_clean():
+            initial_branch = pushall.current_branch()
+            if initial_branch != branch:
                 subprocess.run(["git", "checkout", branch], check=True)
-                result = subprocess.run(["git", "pull", remote, branch], check=True, capture_output=True, text=True)
-                print(f"[green]INFO[/]: pulled {path_str}")
-                print(result.stdout)
+            try:
+                subprocess.run(['git', 'pull', remote, branch], check=True)
+                print(f"[green]INFO[/]: pulled {path_str}:{branch}")
             finally:
-                subprocess.run(["git", "checkout", initial_branch], check=True)
-                result = subprocess.run(["git", "status"], check=True, capture_output=True, text=True)
-                final_branch = result.stdout.split('\n')[0].split("On branch ")[1]
-                print(f"[green]INFO[/]: final branch is {final_branch}")
-
+                if pushall.current_branch() != initial_branch:
+                    subprocess.run(["git", "checkout", initial_branch], check=True)
             continue
-        print("[yellow]WARNING[/]: Review the changes before pulling")
+        print("[yellow]WARNING[/]: Repo dirty, skipping: {path_str}")
         print(result.stdout)
 
 if __name__ == "__main__":
