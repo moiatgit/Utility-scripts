@@ -5,13 +5,27 @@
 
 vimflavor=nvim
 
-TERMINAL=gnome-terminal     # xfce4-terminal
-
-version5=$(LANG=en bash --version | grep "GNU bash, version 5")
-if [ -z "$version5" ];
-then
-    $TERMINAL -e "$vimflavor -p \"$*\""
+# Select terminal
+if command -v alacritty >/dev/null 2>&1; then
+  TERMINAL="alacritty"
+elif command -v kitty >/dev/null 2>&1; then
+  TERMINAL="kitty"
+elif command -v gnome-terminal >/dev/null 2>&1; then
+  TERMINAL="gnome-terminal"
 else
-    OPTION="-q"
-    $TERMINAL $OPTION -- $vimflavor -p "$*"
+  echo "No supported terminal found." >&2
+  exit 1
 fi
+
+# Run in selected terminal
+case "$TERMINAL" in
+kitty)
+  kitty "$vimflavor" -p "$@" &
+  ;;
+alacritty)
+  alacritty -e "$vimflavor" -p "$@" &
+  ;;
+gnome-terminal)
+  gnome-terminal -- "$vimflavor" -p "$@" &
+  ;;
+esac
