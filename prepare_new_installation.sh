@@ -17,6 +17,10 @@ sudo apt install libsqlite3-dev
 sudo apt install libbz2-dev
 sudo apt install python3-tk tk tk-dev libffi-dev
 
+# For gnome integrations
+sudo apt install autocutsel # for alacrity
+sudo apt install xdotool    # for getting mouse location
+
 #if [ ! -d $HOME/bin ];
 #then
 #	git clone https://github.com/moiatgit/Utility-scripts $HOME/bin
@@ -27,16 +31,15 @@ sudo apt install python3-tk tk tk-dev libffi-dev
 #gsettings set org.gnome.desktop.wm.preferences num-workspaces 10
 #gsettings set org.gnome.shell.app-switcher current-workspace-only true
 
-
 sudo apt install cmake
 sudo apt install libcanberra-gtk-module
 sudo apt install nodejs npm -y
 
-wget -P ~/.local/share/fonts https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/AnonymiceProNerdFontMono.zip \
-&& cd ~/.local/share/fonts \
-&& unzip AnonymiceProNerdFontMono.zip \
-&& rm AnonymiceProNerdFontMono.zip \
-&& fc-cache -fv
+wget -P ~/.local/share/fonts https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/AnonymiceProNerdFontMono.zip &&
+  cd ~/.local/share/fonts &&
+  unzip AnonymiceProNerdFontMono.zip &&
+  rm AnonymiceProNerdFontMono.zip &&
+  fc-cache -fv
 
 cargo install tree-sitter-cli
 sudo apt install luarocks
