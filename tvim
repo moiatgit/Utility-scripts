@@ -5,6 +5,62 @@
 
 vimflavor=nvim
 
+launch_alacritty() {
+
+  # Default position
+  XPOS=100
+  YPOS=100
+
+  # Get current mouse position
+  if command -v xdotool >/dev/null 2>&1; then
+    #xdotool search --name "alacritty" windowactivate --sync
+    eval $(xdotool getmouselocation --shell)
+    while read line; do
+      set -- $line
+      if [ "$3" = "primary" ]; then
+        geom=${4}
+      else
+        geom=${3}
+      fi
+
+      screen_w=$(echo $geom | cut -d'x' -f1)
+      screen_h=$(echo $geom | cut -d'x' -f2 | cut -d'+' -f1)
+      offset_x=$(echo $geom | cut -d'+' -f2)
+      offset_y=$(echo $geom | cut -d'+' -f3)
+
+      if [ "$X" -ge "$offset_x" ] && [ "$X" -lt $((offset_x + screen_w)) ] &&
+        [ "$Y" -ge "$offset_y" ] && [ "$Y" -lt $((offset_y + screen_h)) ]; then
+        # Cursor is on this screen
+        XPOS=$X
+        YPOS=$Y
+        break
+      fi
+    done < <(xrandr | grep ' connected')
+  fi
+
+  alacritty -e "$vimflavor" -p "$@" &
+  PID=$!
+  # Give the window a moment to appear
+  sleep 0.3
+  # Move the new window to the cursor position
+  WIN_ID=$(xdotool search --onlyvisible --pid $PID | head -n1)
+  if [ -n "$WIN_ID" ]; then
+    xdotool windowmove $WIN_ID $XPOS $YPOS
+
+    WIN_GEOM=$(xdotool getwindowgeometry --shell $WIN_ID)
+    eval $WIN_GEOM
+    NEW_X=$XPOS
+    NEW_Y=$YPOS
+
+    # Move the cursor
+    BAR_OFFSET=25                   # title bar estimated height
+    CURSOR_X=$((NEW_X + WIDTH / 2)) # center
+    CURSOR_Y=$((NEW_Y + BAR_OFFSET))
+    xdotool mousemove $CURSOR_X $CURSOR_Y
+
+  fi
+}
+
 # Select terminal
 if command -v alacritty >/dev/null 2>&1; then
   TERMINAL="alacritty"
@@ -23,7 +79,8 @@ kitty)
   kitty "$vimflavor" -p "$@" &
   ;;
 alacritty)
-  alacritty -e "$vimflavor" -p "$@" &
+  #alacritty -e "$vimflavor" -p "$@" &
+  launch_alacritty
   ;;
 gnome-terminal)
   gnome-terminal -- "$vimflavor" -p "$@" &

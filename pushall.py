@@ -13,7 +13,7 @@ import yaml
 
 def branch_ahead(remote: str, branch: str) -> bool:
     """Return True if local branch is ahead of remote."""
-    result = subprocess.run(['git', 'rev-list', f"{remote}/{branch}..HEAD", "--count"],
+    result = subprocess.run(['git', 'rev-list', f"{branch}..HEAD", "--count"],
                             check=True, capture_output=True, text=True)
     return int(result.stdout.strip()) > 0
 
