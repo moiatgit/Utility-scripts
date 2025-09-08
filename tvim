@@ -80,7 +80,7 @@ kitty)
   ;;
 alacritty)
   #alacritty -e "$vimflavor" -p "$@" &
-  launch_alacritty
+  launch_alacritty "$@"
   ;;
 gnome-terminal)
   gnome-terminal -- "$vimflavor" -p "$@" &
