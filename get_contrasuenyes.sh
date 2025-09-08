@@ -1,8 +1,7 @@
 #!/bin/sh
 mkdir -p ~/.config/contrasuenyes
 cd ~/.config/contrasuenyes
-if [ -f .contrasuenyes ];
-then
-    mv .contrasuenyes ".contrasuenyes.$(date +%Y%m%d%H%M%S)"
+if [ -f .contrasuenyes ]; then
+  mv .contrasuenyes ".contrasuenyes.$(date +%Y%m%d%H%M%S)"
 fi
-scp blami.net:.config/contrasuenyes/.contrasuenyes .
+scp "blami.home:~/.config/contrasuenyes/.contrasuenyes" .
