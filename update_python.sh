@@ -59,6 +59,6 @@ then
     echo "Error: expected file $foldername/configure"
     exit 1
 fi
-./configure --enable-optimizations && \
-    make -j `nproc` && \
+./configure --enable-optimizations --with-lto=full --with-ensurepip=upgrade && \
+    make -j $(nproc) && \
     sudo make altinstall

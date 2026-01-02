@@ -13,9 +13,9 @@ echo -n "Suspending the system "
 if [[ -z "$1" ]];
 then
     echo "now"
-    sudo systemctl suspend
+    sudo systemctl suspend -i
 else
     echo "in $1"
-    sleep "$1" && sudo systemctl suspend
+    sleep "$1" && sudo systemctl suspend -i
 fi
 

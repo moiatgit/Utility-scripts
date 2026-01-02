@@ -3,86 +3,89 @@
 # This script opens a new terminal and opens a vim edition on $@
 # then, it moves the window to the mouse position and adjusts the
 # mouse cursor to point on the bar of the new window.
+#
+# NOTE: unfortunately this functionality is not available anymore in Wayland
+# By now I leave them commented out just for reference
 
 vimflavor=nvim
 
 launch_alacritty() {
-  args=("$@")
+    args=("$@")
 
-  # Define the title of the new window
-  TITLE="nvim"
-  if [ $# -gt 0 ]; then
-    TITLE="$1" # The first file to open becomes the title
-  fi
+    # Define the title of the new window
+    TITLE="nvim"
+    if [ $# -gt 0 ]; then
+        TITLE="$1" # The first file to open becomes the title
+    fi
 
-  # Check xdotool is installed
-  if ! command -v xdotool >/dev/null 2>&1; then
-    echo "ERROR: xdotool is not installed" >&2
-    echo "sudo apt install xdotool"
-    exit 1
-  fi
+    ## # Check xdotool is installed
+    ## if ! command -v xdotool >/dev/null 2>&1; then
+    ##   echo "ERROR: xdotool is not installed" >&2
+    ##   echo "sudo apt install xdotool"
+    ##   exit 1
+    ## fi
 
-  # Check xwininfo is installed
-  if ! command -v xwininfo >/dev/null 2>&1; then
-    echo "ERROR: xwininfo is not installed" >&2
-    echo "sudo apt install xwininfo"
-    exit 1
-  fi
+    ## # Check xwininfo is installed
+    ## if ! command -v xwininfo >/dev/null 2>&1; then
+    ##     echo "ERROR: xwininfo is not installed" >&2
+    ##     echo "sudo apt install xwininfo"
+    ##     exit 1
+    ## fi
 
-  # Get current mouse position
-  eval $(xdotool getmouselocation --shell)
-  MOUSE_X=$X
-  MOUSE_Y=$Y
+    # Get current mouse position
+    eval $(xdotool getmouselocation --shell)
+    MOUSE_X=$X
+    MOUSE_Y=$Y
 
-  # Launch alacritty
-  alacritty -T "$TITLE" -e "$vimflavor" -p "${args[@]}" &
-  PID=$!
+    # Launch alacritty
+    alacritty -T "$TITLE" -e "$vimflavor" -p "${args[@]}" &
+    PID=$!
 
-  # Give the window a moment to appear
-  sleep 0.2
+    ## # Give the window a moment to appear
+    ## sleep 0.2
 
-  # Get the window id
-  WIN_ID=$(xdotool search --onlyvisible --pid $PID | head -n1)
+    ## # Get the window id
+    ## WIN_ID=$(xdotool search --onlyvisible --pid $PID | head -n1)
 
-  # Move the window to the mouse position
-  xdotool windowmove $WIN_ID $MOUSE_X $MOUSE_Y
+    ## # Move the window to the mouse position
+    ## xdotool windowmove $WIN_ID $MOUSE_X $MOUSE_Y
 
-  # Give the window a moment to settle
-  sleep 0.2
+    ## # Give the window a moment to settle
+    ## sleep 0.2
 
-  # Get the window absolute coordinates for the upper left corner
-  WIN_INFO=$(xwininfo -id $WIN_ID)
-  ABS_X=$(echo "$WIN_INFO" | grep "Absolute upper-left X" | awk '{print $4}')
-  ABS_Y=$(echo "$WIN_INFO" | grep "Absolute upper-left Y" | awk '{print $4}')
+    ## # Get the window absolute coordinates for the upper left corner
+    ## WIN_INFO=$(xwininfo -id $WIN_ID)
+    ## ABS_X=$(echo "$WIN_INFO" | grep "Absolute upper-left X" | awk '{print $4}')
+    ## ABS_Y=$(echo "$WIN_INFO" | grep "Absolute upper-left Y" | awk '{print $4}')
 
-  # Move the cursor to the title bar of the window
-  CURSOR_X=$((ABS_X + 20))
-  CURSOR_Y=$((ABS_Y - 20))
-  xdotool mousemove "$CURSOR_X" "$CURSOR_Y"
+    ## # Move the cursor to the title bar of the window
+    ## CURSOR_X=$((ABS_X + 20))
+    ## CURSOR_Y=$((ABS_Y - 20))
+    ## xdotool mousemove "$CURSOR_X" "$CURSOR_Y"
 }
 
 # Select terminal
 if command -v alacritty >/dev/null 2>&1; then
-  TERMINAL="alacritty"
+    TERMINAL="alacritty"
 elif command -v kitty >/dev/null 2>&1; then
-  TERMINAL="kitty"
+    TERMINAL="kitty"
 elif command -v gnome-terminal >/dev/null 2>&1; then
-  TERMINAL="gnome-terminal"
+    TERMINAL="gnome-terminal"
 else
-  echo "No supported terminal found." >&2
-  exit 1
+    echo "No supported terminal found." >&2
+    exit 1
 fi
 
 # Run in selected terminal
 case "$TERMINAL" in
 kitty)
-  kitty "$vimflavor" -p "$@" &
-  ;;
+    kitty "$vimflavor" -p "$@" &
+    ;;
 alacritty)
-  #alacritty -e "$vimflavor" -p "$@" &
-  launch_alacritty $@
-  ;;
+    #alacritty -e "$vimflavor" -p "$@" &
+    launch_alacritty $@
+    ;;
 gnome-terminal)
-  gnome-terminal -- "$vimflavor" -p "$@" &
-  ;;
+    gnome-terminal -- "$vimflavor" -p "$@" &
+    ;;
 esac
