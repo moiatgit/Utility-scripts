@@ -50,3 +50,6 @@ sudo apt install plantuml
 
 # Working with nuitka
 sudo apt install patchelf ccache
+
+# Requirements for Python 3.13.12
+sudo apt install libxml2-dev libxslt1-dev zlib1g-dev
