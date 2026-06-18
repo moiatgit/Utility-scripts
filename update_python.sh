@@ -4,20 +4,28 @@ if [ -z "$1" ];
 then
     echo "Use $0 download-url | downloaded_file"
     echo "\te.g. $0 https://www.python.org/ftp/python/3.11.1/Python-3.11.1.tgz"
+    echo "\te.g. $0 3.11.1"
     exit 1
 fi
 
-if [ -f "$1" ];
+if [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]];
+then
+    url="https://www.python.org/ftp/python/$1/Python-$1.tar.xz"
+elif [ -f "$1" ];
 then
     zipped="$1"
 else
+    url="$1"
+fi
+if [ -z "$zipped" ];
+then
     cd ${TMPDIR:-/tmp}
-    if ! wget -c "$1";
+    if ! wget -c "$url";
     then
-        echo "Error downloading $1"
+        echo "Error downloading $url"
         exit 1
     fi
-    zipped=$(basename "$1")
+    zipped=$(basename "$url")
     if [ ! -f $zipped ];
     then
         echo "Error: downloaded file not found $zipped"
