@@ -67,6 +67,32 @@ then
     echo "Error: expected file $foldername/configure"
     exit 1
 fi
+
+# Ensure dependencies
+sudo apt install -y \
+  build-essential \
+  pkg-config \
+  libffi-dev \
+  libssl-dev \
+  zlib1g-dev \
+  libbz2-dev \
+  libreadline-dev \
+  libsqlite3-dev \
+  libncursesw5-dev \
+  xz-utils \
+  tk-dev \
+  libxml2-dev \
+  libxmlsec1-dev \
+  liblzma-dev \
+  libgdbm-dev \
+  libgdbm-compat-dev \
+  libnss3-dev \
+  libedit-dev \
+  uuid-dev \
+  libyaml-dev
+
+# Do compile
+
 ./configure --enable-optimizations --with-lto=full \
                                    --enable-shared --with-system-libffi \
                                    --with-ensurepip=upgrade && \
